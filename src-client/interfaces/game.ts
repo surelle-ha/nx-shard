@@ -1,5 +1,12 @@
 export interface GameMeta {
+  id: number;
   title: string;
-  image: string;
-  date: string;
+  description: string;
+  coverUrl: string;
+  downloadUrl: string;
+  tags: string[];
+  isExperimental: boolean;
+  isEnabled: boolean;
+  isBroken: boolean;
+  createdAt: string;
 }

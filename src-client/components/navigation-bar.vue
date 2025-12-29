@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+const globalStore = useGlobalStore();
+
 const sidebarOpen = ref(true);
 const sidebarWidth = 248;
+const isExperimental = computed(() => globalStore.isExperimental);
 
 const mainItems = ref<NavigationMenuItem[][]>([
   [
@@ -21,35 +24,35 @@ const mainItems = ref<NavigationMenuItem[][]>([
         {
           label: "Pokemon ZA",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application."
+          description: "Display a modal within your application.",
         },
         {
           label: "Monster Hunter Rise",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application."
+          description: "Display a modal within your application.",
         },
         {
           label: "Celeste",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application."
+          description: "Display a modal within your application.",
         },
         {
           label: "Pokemon Legends: Arceus",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application."
+          description: "Display a modal within your application.",
         },
         {
           label: "The Witcher 3: Wild Hunt",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application."
-        }
+          description: "Display a modal within your application.",
+        },
       ],
     },
     {
       label: "Settings",
       icon: "i-lucide-cog",
       children: [
-      {
+        {
           label: "General",
           icon: "i-lucide-dot",
           description: "Use NuxtLink with superpowers.",
@@ -73,43 +76,43 @@ const mainItems = ref<NavigationMenuItem[][]>([
       label: "Administrator Tool",
       icon: "i-lucide-user-star",
       children: [
-      {
+        {
           label: "Game Manager",
           icon: "i-lucide-plus",
           description: "Use NuxtLink with superpowers.",
           to: "/docs/components/link",
-        }
+        },
       ],
     },
   ],
 ]);
 
-const bottomItems = ref<NavigationMenuItem[][]>([
-  [
-    {
-      label: "Development Mode",
-      icon: "i-lucide-flask-conical",
-      badge: "On",
-    },
-    {
-      label: "Version 1.0.0",
-      icon: "i-lucide-rocket",
-      badge: "Update",
-    },
-  ],
+const bottomItems = computed<NavigationMenuItem[][]>(() => [
+  isExperimental.value
+    ? [
+        {
+          label: "Experimental",
+          icon: "i-lucide-flask-conical",
+          badge: {
+            label: "Enabled",
+            color: "primary",
+            variant: "subtle",
+          },
+        },
+        {
+          label: "Version 1.0.0",
+          icon: "i-lucide-rocket",
+          badge: "Update",
+        },
+      ]
+    : [
+        {
+          label: "Version 1.0.0",
+          icon: "i-lucide-rocket",
+          badge: "Update",
+        },
+      ],
 ]);
-const method = ref([
-  {
-    label: 'Install with MTP',
-    icon: 'i-lucide-usb',
-    to: '/docs/getting-started'
-  },
-  {
-    label: 'Install with FTP',
-    icon: 'i-lucide-wifi',
-    to: '/docs/components'
-  }
-])
 </script>
 <template>
   <aside
@@ -132,9 +135,11 @@ const method = ref([
         />
       </div>
 
-      <UPageAnchors :links="method" />
+      <TransferProtocolIndicator />
 
-      <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
+      <div
+        class="flex-shrink-0 border-t border-gray-200 dark:border-gray-800 pt-4 mt-4"
+      >
         <UNavigationMenu
           orientation="vertical"
           :items="bottomItems"

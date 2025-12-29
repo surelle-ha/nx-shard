@@ -9,8 +9,8 @@ const props = defineProps<{
 <template>
   <UBlogPost
     :title="game.title"
-    :image="game.image"
-    :date="game.date"
+    :image="game.coverUrl"
+    :date="game.createdAt"
   >
     <template #footer>
       <DownloadDrawer :game="game" />

@@ -2,7 +2,7 @@
   definePageMeta({
     layout: "home",
   });
-  
+  const globalStore = useGlobalStore()
   const isLoading = ref(true);
   const pageMeta = {
     header: {
@@ -17,8 +17,12 @@
     }, 1000);
   });
 
-  const lightModeValue = ref(false)
-  </script>
+  const modeValue = ref(globalStore.isDarkMode)
+
+  watch(modeValue, (newValue) => {
+    globalStore.isDarkMode = newValue
+  })
+</script>
   
   <template>
     <div class="h-full p-4 mt-6">
@@ -32,7 +36,7 @@
           </p>
         </div>
         <div class="p-4">
-          <UColorModeSwitch size="lg" v-model="lightModeValue" label="Change dark/light mode" description="This is a checkbox." class="p-2"/>
+          <UColorModeSwitch size="lg" v-model="modeValue" label="Change dark/light mode" description="This is a checkbox." class="p-2"/>
         </div>
       </div>
     </div>

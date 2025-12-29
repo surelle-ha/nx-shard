@@ -58,7 +58,7 @@ const simulateProgress = () => {
       <div class="px-6 py-4">
         <div class="flex items-center gap-4">
           <img
-            :src="game.image"
+            :src="game.coverUrl"
             :alt="game.title"
             class="w-16 h-16 rounded-lg object-cover flex-shrink-0"
           />
