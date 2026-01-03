@@ -85,6 +85,7 @@ async fn obtain_torrent_file(invoke_message: GameMeta) -> Result<(), String> {
 
 #[tauri::command]
 fn download_game(_invoke_message: GameMeta) {
+    // Learn `librqbit` - https://github.com/ikatson/rqbit/blob/main/crates/librqbit/examples/ubuntu.rs
     println!("[Shard_Torrent_Backend] Download game function is empty for now.");
 }
 
