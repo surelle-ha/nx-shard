@@ -8,6 +8,9 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "notification:default"
+    "notification:default",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "stronghold:default"
   ]
 }

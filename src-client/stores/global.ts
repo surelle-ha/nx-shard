@@ -1,20 +1,28 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+
+export interface GlobalSettings {
+  version: string | null;
+}
 
 export const useGlobalStore = defineStore("global", () => {
-  const isDarkMode = ref(true);
-  const isNativeWindowed = ref(false);
-  const isErrorReportable = ref(true);
-  const isInAppNotifEnabled = ref(false);
-  const isDesktopNotifEnabled = ref(false);
-  const isExperimental = ref(false);
+  const settings = ref<GlobalSettings>({
+    version: null,
+  });
+
+  async function initialize() {
+    try {
+      const version = await invoke<string>("get_version");
+      settings.value.version = version ?? null;
+    } catch (error) {
+      console.error("Failed to get app version:", error);
+      settings.value.version = null;
+    }
+  }
 
   return {
-    isDarkMode,
-    isNativeWindowed,
-    isErrorReportable,
-    isInAppNotifEnabled,
-    isDesktopNotifEnabled,
-    isExperimental,
+    settings,
+    initialize,
   };
 });

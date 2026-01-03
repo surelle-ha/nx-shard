@@ -36,9 +36,7 @@ const fields: AuthFormField[] = [
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
-  password: z
-    .string()
-    .min(8, "Must be at least 8 characters"),
+  password: z.string().min(8, "Must be at least 8 characters"),
 });
 
 type Schema = z.output<typeof schema>;
@@ -48,7 +46,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 
   try {
     await accountStore.login(payload.data.email, payload.data.password);
-
+    // if (accountStore.account?.isNew) return navigateTo("/auth/onboard");
     navigateTo("/");
   } catch (error: any) {
     toast.add({
@@ -72,6 +70,20 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
       :fields="fields"
       :loading="loading"
       @submit="onSubmit"
-    />
+    >
+      <template #description>
+        Don't have an account?
+        <ULink to="/auth/register" class="text-primary font-medium">Sign up</ULink>.
+      </template>
+      <template #password-hint>
+        <ULink to="#" class="hidden text-primary font-medium" tabindex="-1"
+          >Forgot password?</ULink
+        >
+      </template>
+      <template #footer>
+        By signing in, you agree to our
+        <ULink to="#" class="text-primary font-medium">Terms of Service</ULink>.
+      </template>
+    </UAuthForm>
   </UPageCard>
 </template>

@@ -1,79 +1,126 @@
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-
-const pageMeta = {
-  header: {
-    name: "🕹️ Explore Games",
-    description: "Here are the available games you may download.",
-  },
-  showHeader: true,
-};
-definePageMeta({
-  layout: "home",
-});
-
-const gameStore = useGameStore();
-const globalStore = useGlobalStore();
-const { gameList, loading, error } = storeToRefs(gameStore);
-const isExperimental = computed(() => globalStore.isExperimental);
-
-const filteredGames = computed(() => {
-  if (!gameList.value) return null;
-
-  return gameList.value.filter((game) => {
-    if (isExperimental.value) return true;
-    return !game.isExperimental;
+  import type { ButtonProps } from '#ui/types';
+  
+  definePageMeta({
+    layout: "home",
   });
-});
-
-onMounted(async () => {
-  await gameStore.loadData();
-  gameStore.subscribeToChanges();
-});
-
-onUnmounted(() => {
-  gameStore.unsubscribe();
-});
-</script>
-
-<template>
-  <div class="h-full p-4 mt-6">
-    <div class="mt-4">
-      <div v-show="pageMeta.showHeader">
-        <USkeleton v-if="loading" class="h-8 w-50" />
-        <h1 v-else class="text-2xl font-bold">{{ pageMeta.header.name }}</h1>
-
-        <USkeleton v-if="loading" class="mt-2 h-6 w-100" />
-        <p v-else class="mt-2 text-gray-600 dark:text-gray-400">
-          {{ pageMeta.header.description }}
-        </p>
-      </div>
-
-      <div v-if="error" class="p-4 text-red-600 dark:text-red-400">
-        Error loading games: {{ error }}
-      </div>
-
-      <div
-        v-else-if="loading"
-        class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4"
-      >
-        <USkeleton v-for="i in 6" :key="i" class="h-72 w-full" />
-      </div>
-
-      <div
-        v-else-if="filteredGames && filteredGames.length > 0"
-        class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4"
-      >
-        <GameCard
-          v-for="game in filteredGames"
-          :key="game.title"
-          :game="game"
+  
+  const accountStore = useAccountStore();
+  const announcementStore = useAnnouncementStore();
+  
+  const isExperimental = computed(() => accountStore.account?.isExperimental);
+  
+  const links = ref<ButtonProps[]>([
+    {
+      label: "Explore Games",
+      to: "/explore",
+      icon: "i-lucide-gamepad-2",
+    },
+    {
+      label: "Learn more",
+      to: "/#news",
+      color: "neutral" as const,
+      variant: "subtle" as const,
+      trailingIcon: "i-lucide-arrow-right",
+    },
+  ]);
+  
+  // Load announcements on mount
+  onMounted(async () => {
+    await announcementStore.loadData();
+    announcementStore.subscribeToChanges();
+  });
+  
+  // Clean up subscription on unmount
+  onUnmounted(() => {
+    announcementStore.unsubscribe();
+  });
+  
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+  
+  // Extract text content from JSONB
+  const getDescription = (content: any) => {
+    if (!content) return 'No description available';
+    if (typeof content === 'string') return content;
+    if (content?.text) return content.text;
+    if (content?.description) return content.description;
+    if (content?.blocks?.[0]?.text) return content.blocks[0].text;
+    return 'No description available';
+  };
+  
+  // Extract image from JSONB content
+  const getImage = (content: any) => {
+    if (!content) return 'https://placehold.co/600x400?text=Announcement';
+    if (content?.image) return content.image;
+    if (content?.coverImage) return content.coverImage;
+    if (content?.thumbnail) return content.thumbnail;
+    return 'https://placehold.co/600x400?text=Announcement';
+  };
+  </script>
+  
+  <template>
+    <div class="h-full p-4 mt-6">
+      <div class="mt-4">
+        <UPageHero
+          :title="`🌿\nnxShard`"
+          description="A Nintendo Switch desktop client to download and install games."
+          :links="links"
+          class="whitespace-pre-line pb-10"
         />
-      </div>
-
-      <div v-else class="p-4 text-center text-gray-600 dark:text-gray-400">
-        No games available.
+  
+        <div class="p-4 mt-4" id="news">
+          <h2 class="text-2xl font-bold mb-6">Latest Announcements</h2>
+  
+          <!-- Loading State -->
+          <div v-if="announcementStore.loading" class="space-y-4">
+            <USkeleton class="h-[200px] w-full rounded-lg" />
+            <USkeleton class="h-[200px] w-full rounded-lg" />
+            <USkeleton class="h-[200px] w-full rounded-lg" />
+          </div>
+  
+          <!-- Error State -->
+          <UAlert
+            v-else-if="announcementStore.error"
+            color="error"
+            variant="subtle"
+            :title="announcementStore.error"
+            icon="i-lucide-alert-circle"
+            class="mb-4"
+          />
+  
+          <!-- Empty State -->
+          <div 
+            v-else-if="!announcementStore.announcements || announcementStore.announcements.length === 0"
+            class="text-center py-12"
+          >
+            <div class="flex flex-col items-center gap-2">
+              <UIcon name="i-lucide-inbox" class="w-12 h-12 text-gray-400" />
+              <p class="text-gray-500 dark:text-gray-400">No announcements yet</p>
+            </div>
+          </div>
+  
+          <!-- Announcements List -->
+          <div v-else class="space-y-4">
+            <UBlogPost
+              v-for="announcement in announcementStore.announcements"
+              :key="announcement.id"
+              :title="announcement.title"
+              :description="getDescription(announcement.content)"
+              :image="getImage(announcement.content)"
+              :date="formatDate(announcement.createdAt)"
+              :to="`/announcements/${announcement.id}`"
+              orientation="horizontal"
+              variant="outline"
+            />
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</template>
+  </template>

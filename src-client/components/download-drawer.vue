@@ -1,75 +1,130 @@
 <script setup lang="ts">
+import { invoke } from "@tauri-apps/api/core";
 import type { GameMeta } from "~/interfaces/game";
 
 const toast = useToast();
+
 const props = defineProps<{
   game: GameMeta;
 }>();
 
-const value = ref(0);
 const isOpen = ref(false);
-const isSimulating = ref(false);
+const isRunning = ref(false);
+const currentStage = ref(0);
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Stage labels (UI only)
+ */
 const stages = [
   "Getting game metadata...",
+  "Creating game directory...",
   "Obtaining torrent file...",
-  "Torrent file downloaded. Creating game directory...",
-  "Game downloading...",
-  "Downloaded. Extracting and removing torrent file...",
+  "Downloading game...",
+  "Extracting and cleaning up...",
   "Done!",
 ];
 
-const simulateProgress = () => {
-  if (isSimulating.value) return;
+/**
+ * Helper: advance to a stage
+ */
+const goToStage = (index: number) => {
+  currentStage.value = index;
+};
 
-  isSimulating.value = true;
+const getGameMetadata = async () => {
+  console.log("[Shard_Torrent_Runner] Obtaining game data.");
+  console.log();
+  invoke("get_game_meta", { invokeMessage: props.game });
+  await sleep(1000);
+};
+
+const createGameDirectory = async () => {
+  console.log("[Shard_Torrent_Runner] Creating game directory.");
+  await invoke("create_game_dir", { invokeMessage: props.game });
+  await sleep(1000);
+};
+
+const obtainTorrent = async () => {
+  console.log("[Shard_Torrent_Runner] Obtaining torrent file.");
+  await invoke("obtain_torrent_file", { invokeMessage: props.game });
+  await sleep(1000);
+};
+
+const downloadGame = async () => {
+  console.log("[Shard_Torrent_Runner] Downloading.");
+  await invoke("download_game", { invokeMessage: props.game });
+  await sleep(1000);
+};
+
+const extractAndCleanup = async () => {
+  console.log("[Shard_Torrent_Runner] Run extraction and clean up");
+  await invoke("extract_and_clean", { invokeMessage: props.game });
+  await sleep(1000);
+};
+
+/**
+ * Main pipeline
+ */
+const startDownload = async () => {
+  if (isRunning.value) return;
+
+  isRunning.value = true;
   isOpen.value = true;
-  value.value = 0;
+  currentStage.value = 0;
 
-  stages.forEach((_, index) => {
-    setTimeout(() => {
-      value.value = index;
-      if (index === stages.length - 1) {
-        setTimeout(() => {
-          toast.add({
-            title: "Download Complete",
-            icon: 'i-lucide-download',
-          });
-          isSimulating.value = false;
-        }, 1000);
-      }
-    }, index * 1500);
-  });
+  try {
+    goToStage(0);
+    await getGameMetadata();
+
+    goToStage(1);
+    await createGameDirectory();
+
+    goToStage(2);
+    await obtainTorrent();
+
+    goToStage(3);
+    await downloadGame();
+
+    goToStage(4);
+    await extractAndCleanup();
+
+    goToStage(5);
+
+    toast.add({
+      title: "Download Complete",
+      icon: "i-lucide-download",
+    });
+  } catch (err) {
+    toast.add({
+      title: "Download Failed",
+      description: err instanceof Error ? err.message : "Unknown error",
+      color: "error",
+    });
+  } finally {
+    isRunning.value = false;
+  }
 };
 </script>
 
 <template>
-  <UDrawer v-model="isOpen" :overlay="false">
-    <UButton
-      label="Download"
-      icon="i-lucide-download"
-      color="primary"
-      variant="solid"
-      class="w-full cursor-pointer rounded-t-none"
-      @click="simulateProgress"
-    />
-
-    <template #content>
-      <div class="px-6 py-4">
-        <div class="flex items-center gap-4">
-          <img
-            :src="game.coverUrl"
-            :alt="game.title"
-            class="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          />
-          <div class="flex-1 min-w-0">
-            <h3 class="text-sm font-semibold mb-2 truncate">
-              {{ game.title }}
-            </h3>
-            <UProgress v-model="value" :max="stages" />
-          </div>
-        </div>
-      </div>
-    </template>
-  </UDrawer>
+  <UButton
+    v-if="!isRunning"
+    label="Download"
+    icon="i-lucide-download"
+    color="primary"
+    class="mt-2 cursor-pointer"
+    variant="ghost"
+    :loading="isRunning"
+    @click="startDownload"
+  />
+  <UProgress
+    v-else
+    :model-value="currentStage"
+    :max="stages.length - 1"
+    class="cursor-pointer"
+  />
 </template>

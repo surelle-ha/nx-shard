@@ -1,9 +1,10 @@
 <script setup lang="ts">
-const globalStore = useGlobalStore();
 const accountStore = useAccountStore();
 
 const isLoading = ref(true);
-const isExperimental = computed(() => globalStore.isExperimental);
+const displayName = computed(() => accountStore.account?.displayName);
+const isExperimental = computed(() => accountStore.account?.isExperimental);
+const isAdmin = computed(() => accountStore.account?.isAdmin);
 
 onMounted(() => {
   setTimeout(() => {
@@ -15,11 +16,15 @@ onMounted(() => {
 <template>
   <div class="flex items-center gap-4 mb-4">
     <USkeleton v-if="isLoading" class="h-12 w-12 rounded-full" />
-    <UAvatar v-else :src="accountStore.account?.imageUrl" :alt="accountStore.account?.name || 'NA'" class="h-12 w-12" />
+    <UAvatar v-else :src="accountStore.account?.imageUrl" :alt="displayName || 'NA'" class="h-12 w-12" />
 
     <div class="grid gap-2 flex-1">
       <USkeleton v-if="isLoading" class="h-4 w-[150px]" />
-      <span v-else class="font-semibold text-sm"><UBadge v-show="isExperimental" icon="i-lucide-flask-conical" size="sm" variant="outline"/> {{ accountStore.account?.name }} </span>
+      <span v-else class="font-semibold text-sm">
+        <UBadge v-show="isExperimental" icon="i-lucide-flask-conical" size="sm" variant="outline"/>
+        <UBadge v-show="isAdmin" icon="i-lucide-shield-user" size="sm" variant="outline" color="info"/>
+        {{ displayName }}
+      </span>
 
       <USkeleton v-if="isLoading" class="h-4 w-[100px]" />
       <span

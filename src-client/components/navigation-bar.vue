@@ -1,52 +1,89 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+const accountStore = useAccountStore();
 const globalStore = useGlobalStore();
+const toast = useToast();
 
 const sidebarOpen = ref(true);
 const sidebarWidth = 248;
-const isExperimental = computed(() => globalStore.isExperimental);
+const isExperimental = computed(() => accountStore.account?.isExperimental);
+
+const handleLogout = async () => {
+  try {
+    await accountStore.logout();
+    navigateTo("/auth/login");
+  } catch (error: any) {
+    toast.add({
+      title: "Error",
+      description: error.message || "Failed to logout",
+      color: "error",
+    });
+  }
+};
 
 const mainItems = ref<NavigationMenuItem[][]>([
   [
     {
-      label: "Explore",
-      description: "Fully styled and customizable components for Nuxt.",
-      icon: "i-lucide-search",
+      label: "Home",
+      icon: "i-lucide-home",
+      defaultOpen: true,
       to: "/",
+    },
+    {
+      label: "Account",
+      icon: "i-lucide-user",
+      defaultOpen: true,
+      to: "/account",
+    },
+    {
+      label: "Explore",
+      icon: "i-lucide-search",
+      to: "/explore",
+      badge: {
+        icon: 'i-lucide-flask-conical',
+        label: 'Beta',
+        variant: 'subtle',
+        color: 'warning'
+      }
     },
     {
       label: "Library",
       icon: "i-lucide-gamepad-2",
-      active: false,
-      defaultOpen: false,
+      to: '/library',
       children: [
         {
           label: "Pokemon ZA",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application.",
         },
         {
           label: "Monster Hunter Rise",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application.",
         },
         {
           label: "Celeste",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application.",
         },
         {
           label: "Pokemon Legends: Arceus",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application.",
         },
         {
           label: "The Witcher 3: Wild Hunt",
           icon: "i-lucide-gamepad",
-          description: "Display a modal within your application.",
         },
       ],
+    },
+    {
+      label: "Cross Lan Play",
+      icon: "i-lucide-globe",
+      // to: "/lan-play",
+      badge: {
+        icon: 'i-lucide-wrench',
+        label: 'Soon',
+        variant: 'subtle',
+        color: 'warning'
+      }
     },
     {
       label: "Settings",
@@ -55,37 +92,45 @@ const mainItems = ref<NavigationMenuItem[][]>([
         {
           label: "General",
           icon: "i-lucide-dot",
-          description: "Use NuxtLink with superpowers.",
           to: "/settings/general",
-        },
-        {
-          label: "Appearance",
-          icon: "i-lucide-dot",
-          description: "Display a modal within your application.",
-          to: "/settings/appearance",
         },
         {
           label: "Source",
           icon: "i-lucide-dot",
-          description: "Display a list of links.",
           to: "/settings/source",
         },
       ],
     },
     {
-      label: "Administrator Tool",
-      icon: "i-lucide-user-star",
-      children: [
-        {
-          label: "Game Manager",
-          icon: "i-lucide-plus",
-          description: "Use NuxtLink with superpowers.",
-          to: "/docs/components/link",
-        },
-      ],
+      label: "Donate",
+      icon: "i-lucide-coffee",
+      to: "/donate"
     },
   ],
 ]);
+if (accountStore.account && accountStore.account.isAdmin) {
+  mainItems.value[0]?.push({
+    label: "Administrator Tool",
+    icon: "i-lucide-user-star",
+    children: [
+      {
+        label: "Announcements",
+        icon: "i-lucide-newspaper",
+        to: "/admin/announcements",
+      },
+      {
+        label: "Game Manager",
+        icon: "i-lucide-gamepad",
+        to: "/admin/games",
+      },
+      {
+        label: "User Manager",
+        icon: "i-lucide-users",
+        to: "/admin/users",
+      },
+    ],
+  })
+}
 
 const bottomItems = computed<NavigationMenuItem[][]>(() => [
   isExperimental.value
@@ -107,13 +152,14 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
       ]
     : [
         {
-          label: "Version 1.0.0",
+          label: `Version ${globalStore.settings.version}`,
           icon: "i-lucide-rocket",
           badge: "Update",
         },
       ],
 ]);
 </script>
+
 <template>
   <aside
     :class="[
@@ -127,7 +173,7 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
         <ProfileBanner />
       </div>
 
-      <div class="flex-1 overflow-y-auto min-h-0">
+      <div class="flex-1 overflow-y-auto min-h-0 shard-scroll">
         <UNavigationMenu
           orientation="vertical"
           :items="mainItems"
@@ -145,6 +191,17 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
           :items="bottomItems"
           class="data-[orientation=vertical]:w-full"
         />
+
+        <UButton
+          @click="handleLogout"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-log-out"
+          class="w-full justify-start mt-2 cursor-pointer"
+          size="md"
+        >
+          Logout
+        </UButton>
       </div>
     </div>
   </aside>

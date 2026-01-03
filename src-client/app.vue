@@ -1,13 +1,27 @@
 <script setup lang="ts">
+import { invoke } from "@tauri-apps/api/core";
+
+const accountStore = useAccountStore();
 const globalStore = useGlobalStore();
-
-const isExperimental = computed(() => globalStore.isExperimental);
-
+const isExperimental = computed(() => accountStore.account?.isExperimental);
 const handleContextMenu = (e: MouseEvent) => {
   if (!isExperimental.value) {
     e.preventDefault();
   }
 };
+onMounted(() => {
+  globalStore.initialize();
+});
+
+/**
+ * BELOW ARE THE RUST-LEVEL
+ * OPERATIONS.
+ */
+/** Check File System */
+invoke("check_file_system");
+
+/** Start Background Processes */
+// invoke("start_bgp");
 </script>
 
 <template>

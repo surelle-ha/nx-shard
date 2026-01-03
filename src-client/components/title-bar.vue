@@ -1,12 +1,60 @@
 <template>
   <div
-    class="titlebar dark:text-white bg-white dark:bg-gray-900 px-2 py-[5px] text-sm select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50"
+    class="titlebar text-black dark:text-white px-2 py-[5px] text-sm select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 overflow-hidden"
+    :class="
+      isOnline
+        ? 'bg-white dark:bg-gray-900 transition-colors duration-300 ease-in-out'
+        : 'bg-warning-500 dark:bg-warning-600'
+    "
     data-tauri-drag-region
   >
-    <div class="flex items-center gap-2">🌿 {{ title }}</div>
+    <!-- Shimmer overlay when offline -->
+    <div
+      v-if="!isOnline"
+      class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none"
+    ></div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 relative z-10">
+      <img src="@/assets/image/favicon.png" class="ml-1 h-4 w-4" alt="🌿" />
+      {{ title }}
+    </div>
+
+    <div v-if="!isOnline" class="relative z-10">
+      <UBadge icon="i-lucide-wifi" size="md" color="warning" variant="soft">
+        No Internet Connection
+      </UBadge>
+    </div>
+    <div v-else class="relative z-10"></div>
+
+    <div class="flex items-center gap-2 relative z-10">
       <div class="flex items-center gap-2">
+        <UIcon
+          v-if="charging"
+          name="i-lucide-battery-charging"
+          class="h-4 w-4"
+        />
+        <UIcon
+          v-else-if="level >= 0.9"
+          name="i-lucide-battery-full"
+          class="h-4 w-4"
+        />
+        <UIcon
+          v-else-if="level >= 0.5"
+          name="i-lucide-battery-medium"
+          class="h-4 w-4"
+        />
+        <UIcon
+          v-else-if="level >= 0.25"
+          name="i-lucide-battery-low"
+          class="h-4 w-4"
+        />
+        <UIcon
+          v-else-if="level >= 0.1"
+          name="i-lucide-battery-warning"
+          class="h-4 w-4"
+        />
+        <UIcon v-else name="i-lucide-plug-zap" class="h-4 w-4" />
+
         <button
           @click="minimize"
           class="window-btn w-3 h-3 rounded-full bg-[#FEBC2E] hover:bg-[#FEBC2E]/80 cursor-pointer"
@@ -20,13 +68,48 @@
   </div>
 </template>
 
+<style scoped>
+.titlebar {
+  -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.titlebar button {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.window-btn {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 5s ease-in-out infinite;
+}
+</style>
+
 <script setup lang="ts">
+import { useBattery } from "@vueuse/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { onMounted, onUnmounted, ref } from "vue";
 
 const win = getCurrentWindow();
 const title = ref("");
 const isMaximized = ref(false);
+const isOnline = useOnline();
+const { charging, level } = useBattery();
 
 const minimize = async () => {
   await win.minimize();
@@ -57,24 +140,4 @@ onUnmounted(() => {
     unlistenResize();
   }
 });
-const value = ref({})
 </script>
-
-<style scoped>
-.titlebar {
-  -webkit-app-region: drag;
-  app-region: drag;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.titlebar button {
-  -webkit-app-region: no-drag;
-  app-region: no-drag;
-}
-
-.window-btn {
-  -webkit-app-region: no-drag;
-  app-region: no-drag;
-}
-</style>
