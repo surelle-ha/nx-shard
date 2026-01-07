@@ -106,6 +106,11 @@ const mainItems = ref<NavigationMenuItem[][]>([
       icon: "i-lucide-coffee",
       to: "/donate"
     },
+    {
+      label: "Device",
+      icon: "i-lucide-laptop",
+      to: "/device",
+    },
   ],
 ]);
 if (accountStore.account && accountStore.account.isAdmin) {
@@ -122,6 +127,11 @@ if (accountStore.account && accountStore.account.isAdmin) {
         label: "Game Manager",
         icon: "i-lucide-gamepad",
         to: "/admin/games",
+      },
+      {
+        label: "Developer Tools",
+        icon: "i-lucide-cog",
+        to: "/admin/dev-tool",
       },
       {
         label: "User Manager",

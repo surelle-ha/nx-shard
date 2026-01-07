@@ -10,3 +10,31 @@ export interface GameMeta {
   isBroken: boolean;
   createdAt: string;
 }
+
+export interface DownloadProgress {
+  progress: number;
+  downloadedBytes: number;
+  totalBytes: number;
+  downloadSpeed: number;
+  uploadSpeed: number;
+  peers: number;
+  state: string;
+}
+
+export interface DownloadState {
+  isRunning: boolean;
+  isPaused: boolean;
+  currentStage: number;
+  progress: DownloadProgress;
+}
+
+export interface TorrentStats {
+  gameId: number;
+  state: string;
+  progress: number;
+  downloadedBytes: number;
+  totalBytes: number;
+  downloadSpeed: number;
+  uploadSpeed: number;
+  peers: number;
+}

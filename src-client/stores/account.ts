@@ -157,10 +157,20 @@ export const useAccountStore = defineStore("account", () => {
 
       const { error } = await supabase
         .from("user_library")
-        .update({ gameId: updatedLibrary } as never)
-        .eq("userId", account.value.id);
+        .upsert(
+          {
+            userId: account.value.id,
+            gameId: updatedLibrary
+          },
+          {
+            onConflict: 'userId' // Specify the unique constraint column
+          }
+        );
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
       // Update local state
       library.value = updatedLibrary;
@@ -183,10 +193,20 @@ export const useAccountStore = defineStore("account", () => {
 
       const { error } = await supabase
         .from("user_library")
-        .update({ gameId: updatedLibrary } as never)
-        .eq("userId", account.value.id);
+        .upsert(
+          {
+            userId: account.value.id,
+            gameId: updatedLibrary
+          },
+          {
+            onConflict: 'userId'
+          }
+        );
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
       // Update local state
       library.value = updatedLibrary;

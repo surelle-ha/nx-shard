@@ -11,6 +11,10 @@
     "notification:default",
     "core:window:allow-close",
     "core:window:allow-minimize",
-    "stronghold:default"
+    "stronghold:default",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled",
+    "os:default"
   ]
 }

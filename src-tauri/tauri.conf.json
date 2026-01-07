@@ -16,7 +16,9 @@
         "width": 1200,
         "height": 720,
         "shadow": true,
-        "decorations": false
+        "decorations": false,
+        "center": true,
+        "resizable": false
       }
     ],
     "security": {

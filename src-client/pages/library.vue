@@ -22,7 +22,6 @@ const pageMeta = {
 };
 
 const isLoading = ref(true);
-const viewMode = ref<"carousel" | "table">("table");
 
 onMounted(async () => {
   try {
@@ -116,9 +115,7 @@ const columns: TableColumn<GameMeta>[] = [
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-10"
-  >
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-10">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
@@ -126,40 +123,11 @@ const columns: TableColumn<GameMeta>[] = [
         <div v-else class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-3">
             <div class="p-3 bg-primary-500/10 rounded-xl">
-              <UIcon
-                name="i-heroicons-book-open"
-                class="w-8 h-8 text-primary-500"
-              />
+              <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-primary-500" />
             </div>
-            <h1
-              class="text-4xl font-bold bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text"
-            >
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text">
               {{ pageMeta.header.name }}
             </h1>
-          </div>
-
-          <!-- View Toggle -->
-          <div class="flex items-center gap-2">
-            <UButton
-              :icon="
-                viewMode === 'carousel'
-                  ? 'i-heroicons-squares-2x2'
-                  : 'i-heroicons-squares-2x2-solid'
-              "
-              :variant="viewMode === 'carousel' ? 'solid' : 'ghost'"
-              @click="viewMode = 'carousel'"
-              size="lg"
-            />
-            <UButton
-              :icon="
-                viewMode === 'table'
-                  ? 'i-heroicons-list-bullet'
-                  : 'i-heroicons-list-bullet-solid'
-              "
-              :variant="viewMode === 'table' ? 'solid' : 'ghost'"
-              @click="viewMode = 'table'"
-              size="lg"
-            />
           </div>
         </div>
 
@@ -175,10 +143,7 @@ const columns: TableColumn<GameMeta>[] = [
       </div>
 
       <!-- Empty State -->
-      <div
-        v-else-if="!accountStore.getLibraryGames.length"
-        class="text-center py-20"
-      >
+      <div v-else-if="!accountStore.getLibraryGames.length" class="text-center py-20">
         <UCard class="max-w-md mx-auto">
           <div class="flex flex-col items-center gap-4">
             <UIcon name="i-heroicons-inbox" class="w-16 h-16 text-gray-400" />
@@ -188,77 +153,32 @@ const columns: TableColumn<GameMeta>[] = [
             <p class="text-gray-600 dark:text-gray-400">
               Start adding games to your collection
             </p>
-            <UButton
-              label="Explore Games"
-              icon="i-heroicons-magnifying-glass"
-              to="/explore"
-              size="lg"
-            />
+            <UButton label="Explore Games" icon="i-heroicons-magnifying-glass" to="/explore" size="lg" />
           </div>
         </UCard>
       </div>
 
-      <!-- Carousel View -->
-      <div v-else-if="viewMode === 'carousel'">
-        <UCarousel
-          v-slot="{ item }"
-          loop
-          arrows
-          :autoplay="{ delay: 2500 }"
-          wheel-gestures
-          :prev="{ variant: 'solid' }"
-          :next="{ variant: 'solid' }"
-          :items="accountStore.getLibraryGames"
-          :ui="{
-            item: 'basis-1/3 ps-0',
-            prev: 'sm:start-8',
-            next: 'sm:end-8',
-            container: 'ms-0',
-          }"
-        >
-          <div class="relative group">
-            <img
-              :src="item.coverUrl"
-              :alt="item.title"
-              class="h-[320px] w-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
+      <!-- Grid View -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="item in accountStore.getLibraryGames" :key="item.id"
+          class="relative group overflow-hidden rounded-lg shadow-lg">
+          <img :src="item.coverUrl" :alt="item.title"
+            class="h-[400px] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy" />
 
-            <!-- Overlay -->
-            <div
-              class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 rounded-b-lg"
-            >
-              <h3 class="text-white font-semibold text-sm line-clamp-1">
-                {{ item.title }}
-              </h3>
-              <p v-if="item.tags?.length" class="text-xs text-gray-300">
-                {{ item.tags.join(" • ") }}
-              </p>
-              <DownloadDrawer :game="item" />
-            </div>
-          </div>
-        </UCarousel>
-      </div>
-
-      <!-- Table View -->
-      <UCard v-else class="shadow-xl border-0">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              All Games
-            </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{ accountStore.getLibraryGames.length }} game(s) in your library
+          <!-- Overlay -->
+          <div
+            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/80 to-transparent p-4 transition-transform duration-300 group-hover:scale-105">
+            <h3 class="text-white font-semibold text-lg line-clamp-1 mb-1">
+              {{ item.title }}
+            </h3>
+            <p v-if="item.tags?.length" class="text-sm text-gray-300 mb-2">
+              {{ item.tags.join(" • ") }}
             </p>
+            <DownloadDrawer :game="item" />
           </div>
         </div>
-
-        <UTable
-          :data="accountStore.getLibraryGames"
-          :columns="columns"
-          class="w-full"
-        />
-      </UCard>
+      </div>
     </div>
   </div>
 </template>
