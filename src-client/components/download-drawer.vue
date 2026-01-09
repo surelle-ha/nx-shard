@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import type { GameMeta } from "~/interfaces/game";
 
 const accountStore = useAccountStore();
@@ -10,7 +11,7 @@ const {
   updateStage,
   setPaused,
   completeDownload,
-  removeDownload
+  removeDownload,
 } = useDownloads();
 
 const props = defineProps<{
@@ -21,10 +22,9 @@ const isDownloaded = ref(false);
 
 const checkIfDownloaded = async () => {
   try {
-    isDownloaded.value = await invoke<boolean>(
-      "is_game_downloaded",
-      { invokeMessage: props.game }
-    );
+    isDownloaded.value = await invoke<boolean>("is_game_downloaded", {
+      invokeMessage: props.game,
+    });
   } catch {
     isDownloaded.value = false;
   }
@@ -34,20 +34,20 @@ const removeFromLibrary = async () => {
   try {
     await accountStore.removeFromLibrary(props.game.id);
     toast.add({
-      title: 'Removed from Library',
+      title: "Removed from Library",
       description: `${props.game.title} has been removed`,
-      color: 'warning',
-      icon: 'i-heroicons-trash'
+      color: "warning",
+      icon: "i-heroicons-trash",
     });
   } catch (error: any) {
     toast.add({
-      title: 'Error',
-      description: error.message || 'Failed to remove game',
-      color: 'error',
-      icon: 'i-heroicons-exclamation-circle'
+      title: "Error",
+      description: error.message || "Failed to remove game",
+      color: "error",
+      icon: "i-heroicons-exclamation-circle",
     });
   }
-}
+};
 
 const removeFromDisk = async () => {
   try {
@@ -74,8 +74,27 @@ const removeFromDisk = async () => {
   }
 };
 
-onMounted(() => {
-  checkIfDownloaded();
+onMounted(async () => {
+  await checkIfDownloaded();
+
+  const unlistenRestored = await listen("download-restored", (event: any) => {
+    const { gameId, progress, downloadedBytes, totalBytes } = event.payload;
+
+    // Only initialize if it's for this game
+    if (gameId === props.game.id) {
+      console.log(`[UI] Restored download for game ${gameId}`);
+
+      // Initialize download state at stage 3 (downloading)
+      initDownload(props.game.id);
+      updateStage(props.game.id, 3);
+
+      // The download-progress events will continue updating
+    }
+  });
+
+  onUnmounted(() => {
+    unlistenRestored();
+  });
 });
 
 // Get reactive download state for this specific game
@@ -240,24 +259,26 @@ const startDownload = async () => {
 watchEffect(() => {
   if (downloadState.value?.currentStage === 4) {
     // Extraction stage - run cleanup
-    extractAndCleanup().then(async () => {
-      completeDownload(props.game.id);
+    extractAndCleanup()
+      .then(async () => {
+        completeDownload(props.game.id);
 
-      await checkIfDownloaded();
+        await checkIfDownloaded();
 
-      toast.add({
-        title: "Download Complete",
-        description: `${props.game.title} is ready to play!`,
-        icon: "i-lucide-check-circle",
+        toast.add({
+          title: "Download Complete",
+          description: `${props.game.title} is ready to play!`,
+          icon: "i-lucide-check-circle",
+        });
+      })
+      .catch((err) => {
+        toast.add({
+          title: "Cleanup Failed",
+          description: err instanceof Error ? err.message : "Unknown error",
+          color: "error",
+        });
+        removeDownload(props.game.id);
       });
-    }).catch((err) => {
-      toast.add({
-        title: "Cleanup Failed",
-        description: err instanceof Error ? err.message : "Unknown error",
-        color: "error",
-      });
-      removeDownload(props.game.id);
-    });
   }
 });
 </script>
@@ -267,7 +288,11 @@ watchEffect(() => {
     <!-- Downloading State - Show if actively running -->
     <div v-if="downloadState?.isRunning" class="mt-2 space-y-2">
       <!-- Stage Progress -->
-      <UProgress :model-value="downloadState?.currentStage ?? 0" :max="stages.length - 1" size="sm" />
+      <UProgress
+        :model-value="downloadState?.currentStage ?? 0"
+        :max="stages.length - 1"
+        size="sm"
+      />
       <div class="text-xs text-gray-500">
         {{ stages[downloadState?.currentStage ?? 0] }}
       </div>
@@ -275,7 +300,12 @@ watchEffect(() => {
       <!-- Download Progress (Stage 3 only) -->
       <div v-if="downloadState?.currentStage === 3" class="space-y-2">
         <!-- Main Progress Bar -->
-        <UProgress :model-value="downloadState?.progress.progress ?? 0" :max="100" size="md" color="primary" />
+        <UProgress
+          :model-value="downloadState?.progress.progress ?? 0"
+          :max="100"
+          size="md"
+          color="primary"
+        />
 
         <!-- Stats -->
         <div class="flex justify-between text-xs">
@@ -304,26 +334,46 @@ watchEffect(() => {
 
         <!-- State Info -->
         <div class="text-xs text-gray-400">
-          State: {{ downloadState?.progress.state ?? 'Unknown' }}
+          State: {{ downloadState?.progress.state ?? "Unknown" }}
         </div>
 
         <!-- Controls -->
         <div class="flex gap-2">
-          <UButton v-if="!downloadState?.isPaused" icon="i-lucide-pause" size="xs" color="neutral"
-            @click="pauseDownload">
+          <UButton
+            v-if="!downloadState?.isPaused"
+            icon="i-lucide-pause"
+            size="xs"
+            color="neutral"
+            @click="pauseDownload"
+          >
             Pause
           </UButton>
-          <UButton v-else icon="i-lucide-play" size="xs" color="primary" @click="resumeDownload">
+          <UButton
+            v-else
+            icon="i-lucide-play"
+            size="xs"
+            color="primary"
+            @click="resumeDownload"
+          >
             Resume
           </UButton>
-          <UButton icon="i-lucide-x" size="xs" variant="subtle" color="error" @click="removeFromDisk">
+          <UButton
+            icon="i-lucide-x"
+            size="xs"
+            variant="subtle"
+            color="error"
+            @click="removeFromDisk"
+          >
             Cancel
           </UButton>
         </div>
       </div>
 
       <!-- Completion Message -->
-      <div v-if="downloadState?.currentStage === 5" class="text-sm text-green-600 dark:text-green-400">
+      <div
+        v-if="downloadState?.currentStage === 5"
+        class="text-sm text-green-600 dark:text-green-400"
+      >
         <span class="i-lucide-check-circle inline-block w-4 h-4 mr-1" />
         Download complete!
       </div>
@@ -331,15 +381,39 @@ watchEffect(() => {
 
     <!-- Install - Only show if downloaded AND not currently downloading -->
     <div v-else-if="isDownloaded" class="mt-2 flex justify-between gap-2">
-      <UButton label="Install" icon="i-lucide-hard-drive" variant="ghost" color="primary" class="cursor-pointer" />
-      <UButton icon="i-lucide-trash" variant="ghost" color="error" class="cursor-pointer" @click="removeFromDisk"/>
+      <UButton
+        label="Install"
+        icon="i-lucide-hard-drive"
+        variant="ghost"
+        color="primary"
+        class="cursor-pointer"
+      />
+      <UButton
+        icon="i-lucide-trash"
+        variant="ghost"
+        color="error"
+        class="cursor-pointer"
+        @click="removeFromDisk"
+      />
     </div>
 
     <!-- Download - Show if not running and not downloaded -->
     <div v-else class="mt-2 flex justify-between gap-2">
-      <UButton label="Download" icon="i-lucide-download" color="primary" variant="ghost" class="mt-2 cursor-pointer"
-        @click="startDownload" />
-      <UButton icon="i-lucide-circle-minus" variant="ghost" color="error" class="cursor-pointer" @click="removeFromLibrary" />
+      <UButton
+        label="Download"
+        icon="i-lucide-download"
+        color="primary"
+        variant="ghost"
+        class="mt-2 cursor-pointer"
+        @click="startDownload"
+      />
+      <UButton
+        icon="i-lucide-circle-minus"
+        variant="ghost"
+        color="error"
+        class="cursor-pointer"
+        @click="removeFromLibrary"
+      />
     </div>
   </div>
 </template>

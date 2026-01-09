@@ -531,7 +531,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let state = tauri::async_runtime::block_on(async {
-                TorrentState::new()
+                TorrentState::new(app.handle().clone())
                     .await
                     .expect("Failed to initialize torrent state")
             });

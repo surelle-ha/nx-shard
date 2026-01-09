@@ -3679,6 +3679,7 @@ dependencies = [
  "chrono",
  "directories",
  "env_logger",
+ "hex 0.4.3",
  "librqbit",
  "log",
  "parking_lot",

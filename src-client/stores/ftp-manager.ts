@@ -125,11 +125,11 @@ export const useFTPManagerStore = defineStore("ftpManager", {
     },
 
     // Scan for available game files
-    async scanGameFiles(gamePath: string = "./game_path") {
+    async scanGameFiles() {
       try {
         this.isScanning = true;
         this.error = null;
-        const games = await invoke<GameFile[]>("scan_game_files", { gamePath });
+        const games = await invoke<GameFile[]>("scan_game_files");
         this.availableGames = games;
         console.log(`Found ${games.length} game files`);
         return games;

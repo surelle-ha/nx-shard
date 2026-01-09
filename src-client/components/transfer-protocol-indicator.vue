@@ -108,7 +108,7 @@
    * ----------------------------- */
   const scanGames = async () => {
     try {
-      await ftpManagerStore.scanGameFiles("./game_path");
+      await ftpManagerStore.scanGameFiles();
       toast.add({
         title: `Found ${availableGames.value.length} game files`,
         color: "success",

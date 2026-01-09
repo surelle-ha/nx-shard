@@ -1,3 +1,4 @@
+use crate::configs::defaults::get_game_path;
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
@@ -108,13 +109,13 @@ impl FTPManager {
         self.ftp_ip.lock().unwrap().clone()
     }
 
-    pub fn scan_game_files(&self, game_path: &str) -> Result<Vec<GameFile>, String> {
-        info!("Scanning for game files in: {}", game_path);
+    pub fn scan_game_files(&self, game_path: &PathBuf) -> Result<Vec<GameFile>, String> {
+        info!("Scanning for game files in: {}", game_path.display());
         let mut game_files = Vec::new();
-        let base_path = Path::new(game_path);
+        let base_path = game_path.as_path(); // Convert PathBuf to Path reference
 
         if !base_path.exists() {
-            return Err(format!("Game path does not exist: {}", game_path));
+            return Err(format!("Game path does not exist: {}", game_path.display()));
         }
 
         // Iterate through game directories
@@ -577,13 +578,12 @@ pub fn get_ftp_ip(
 
 #[tauri::command]
 pub fn scan_game_files(
-    game_path: String,
     state: tauri::State<Arc<parking_lot::Mutex<Option<FTPManager>>>>,
 ) -> Result<Vec<GameFile>, String> {
     let manager_guard = state.lock();
 
     if let Some(manager) = manager_guard.as_ref() {
-        manager.scan_game_files(&game_path)
+        manager.scan_game_files(&get_game_path())
     } else {
         Err("FTP Manager not initialized".to_string())
     }
