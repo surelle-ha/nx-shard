@@ -14,8 +14,6 @@ use tauri::{AppHandle, Emitter, Manager};
 
 const DBI_FTP_PORT: u16 = 5000;
 const FTP_TIMEOUT_MS: u64 = 5000;
-const BUFFER_SIZE: usize = 8192;
-const TRANSFER_UPDATE_INTERVAL_MS: u64 = 500;
 const TRANSFER_THROUGHPUT_BUFFER: u64 = 2048;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

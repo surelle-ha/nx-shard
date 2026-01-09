@@ -9,7 +9,7 @@ use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::RwLock;
 
-use crate::configs::defaults::get_game_path;
+use crate::configs::defaults::{get_game_path, get_config_path};
 
 #[derive(Serialize, Deserialize)]
 struct SavedTorrent {
@@ -24,7 +24,7 @@ pub struct TorrentState {
 
 impl TorrentState {
     pub async fn new(app_handle: AppHandle) -> Result<Self, anyhow::Error> {
-        let base_path = PathBuf::from(&get_game_path());
+        let base_path = PathBuf::from(&get_config_path());
         let state_file = base_path.join(".torrent_state.json");
 
         info!("[Shard_Torrent_Backend] Initializing torrent session...");
@@ -239,7 +239,7 @@ impl TorrentState {
 
     fn start_auto_save(&self, interval_secs: u16) {
         let handles = Arc::clone(&self.handles);
-        let state_file = PathBuf::from(&get_game_path()).join(".torrent_state.json");
+        let state_file = PathBuf::from(&get_config_path()).join(".torrent_state.json");
 
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_secs(interval_secs as u64));

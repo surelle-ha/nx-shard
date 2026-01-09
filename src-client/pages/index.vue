@@ -68,12 +68,23 @@
   <template>
     <div class="h-full p-4 mt-6">
       <div class="mt-4">
-        <UPageHero
-          :title="`🌿\nnxShard`"
-          description="A Nintendo Switch desktop client to download and install games."
-          :links="links"
-          class="whitespace-pre-line pb-10"
-        />
+        <div class="relative overflow-hidden">
+          <!-- GIF Background -->
+          <div class="absolute inset-0 -z-10">
+            <img 
+              src="https://kotaku.com/app/uploads/2021/08/22ecb492fc415bbb28dab0bbfd3ad25d.gif" 
+              alt="" 
+              class="w-full h-full object-cover opacity-30"
+            />
+          </div>
+          
+          <UPageHero
+            :title="`🌿\nnxShard`"
+            description="A Nintendo Switch desktop client to download and install games."
+            :links="links"
+            class="whitespace-pre-line pb-10 relative z-10"
+          />
+        </div>
   
         <div class="p-4 mt-4" id="news">
           <h2 class="text-2xl font-bold mb-6">Latest Announcements</h2>

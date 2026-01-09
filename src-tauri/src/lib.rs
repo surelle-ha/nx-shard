@@ -1,29 +1,31 @@
-mod torrent;
 mod configs;
 mod dbi;
+mod torrent;
 
-use log::{debug, error, info, warn};
 use anyhow::Context;
 use directories::{BaseDirs, ProjectDirs, UserDirs};
 use librqbit::{AddTorrent, AddTorrentOptions, AddTorrentResponse, ManagedTorrent, Session};
+use log::{debug, error, info, warn};
 use parking_lot::Mutex;
 use reqwest;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 use tauri::{Emitter, Manager, State};
 use tokio::sync::RwLock;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
 
 use crate::dbi::{ftp_discovery, ftp_manager};
 
 use crate::torrent::state::TorrentState;
 
-use crate::configs::constants::{APP_PATH, GAME_PATH, CONFIG_PATH};
-use crate::configs::defaults::{get_app_path, get_game_path, get_config_path};
+use crate::configs::constants::{APP_PATH, CONFIG_PATH, GAME_PATH};
+use crate::configs::defaults::{get_app_path, get_config_path, get_game_path};
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone)]
@@ -476,6 +478,30 @@ fn extract_and_clean(invoke_message: GameMeta) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+async fn get_active_downloads(
+    state: State<'_, TorrentState>,
+) -> Result<Vec<serde_json::Value>, String> {
+    let handles = state.handles.read().await;
+    let mut active_downloads = Vec::new();
+
+    for (game_id, (_torrent_id, handle)) in handles.iter() {
+        let stats = handle.stats();
+        let progress_percent =
+            (stats.progress_bytes as f64 / stats.total_bytes.max(1) as f64) * 100.0;
+
+        active_downloads.push(serde_json::json!({
+            "gameId": *game_id,
+            "state": format!("{:?}", stats.state),
+            "progress": progress_percent,
+            "downloadedBytes": stats.progress_bytes,
+            "totalBytes": stats.total_bytes,
+        }));
+    }
+
+    Ok(active_downloads)
+}
+
 // ------------------ SYSTEM INFO ------------------
 fn contains_game_file(dir: &Path) -> bool {
     let exts = ["nsp", "nsz", "nsc"];
@@ -518,7 +544,24 @@ fn get_version() -> String {
 // ------------------ RUN ------------------
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tracing_subscriber::fmt::init();
+    let log_file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(get_app_path().join("app.log"))
+        .expect("Failed to open log file");
+
+    tracing_subscriber::registry()
+        .with(
+            fmt::layer()
+                .with_writer(std::io::stdout)
+                .with_filter(EnvFilter::new("info")), 
+        )
+        .with(
+            fmt::layer()
+                .with_writer(std::sync::Arc::new(log_file))
+                .with_filter(EnvFilter::new("warn")),
+        )
+        .init();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
@@ -571,6 +614,7 @@ pub fn run() {
             resume_game,
             uninstall_game,
             extract_and_clean,
+            get_active_downloads,
             is_game_downloaded,
             get_version
         ])

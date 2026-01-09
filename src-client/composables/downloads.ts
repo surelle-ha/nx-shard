@@ -1,6 +1,7 @@
 // composables/useDownloads.ts
 import { ref, computed } from 'vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { invoke } from "@tauri-apps/api/core";
 
 interface DownloadProgress {
   progress: number;
@@ -27,6 +28,7 @@ let listenersInitialized = false;
 let progressUnlisten: UnlistenFn | null = null;
 let completeUnlisten: UnlistenFn | null = null;
 let errorUnlisten: UnlistenFn | null = null;
+let restoredUnlisten: UnlistenFn | null = null;
 
 /**
  * Initialize global event listeners (only once)
@@ -34,6 +36,29 @@ let errorUnlisten: UnlistenFn | null = null;
 async function initializeListeners() {
   if (listenersInitialized) return;
   listenersInitialized = true;
+
+  // Listen for restored downloads (on app restart)
+  restoredUnlisten = await listen<any>('download-restored', (event) => {
+    const { gameId, progress, downloadedBytes, totalBytes, state } = event.payload;
+
+    console.log(`[UI] Restored download for game ${gameId}`);
+
+    // Initialize download state at stage 3 (downloading)
+    downloads.value.set(gameId, {
+      isRunning: true,
+      isPaused: false,
+      currentStage: 3,
+      progress: {
+        progress: progress,
+        downloadedBytes: downloadedBytes,
+        totalBytes: totalBytes,
+        downloadSpeed: 0,
+        uploadSpeed: 0,
+        peers: 0,
+        state: state,
+      },
+    });
+  });
 
   // Listen for progress updates
   progressUnlisten = await listen<any>('download-progress', (event) => {
@@ -80,6 +105,7 @@ export function cleanupDownloadListeners() {
   if (progressUnlisten) progressUnlisten();
   if (completeUnlisten) completeUnlisten();
   if (errorUnlisten) errorUnlisten();
+  if (restoredUnlisten) restoredUnlisten();
   listenersInitialized = false;
 }
 
@@ -110,6 +136,37 @@ export function useDownloads() {
   const isDownloading = (gameId: number) => {
     const state = downloads.value.get(gameId);
     return state?.isRunning ?? false;
+  };
+
+  /**
+ * Check for any active downloads on app startup
+ */
+  const checkForActiveDownloads = async () => {
+    try {
+      const activeDownloads = await invoke<any[]>('get_active_downloads');
+
+      for (const download of activeDownloads) {
+        console.log(`[UI] Found active download for game ${download.gameId}`);
+
+        // Initialize download state at stage 3 (downloading)
+        downloads.value.set(download.gameId, {
+          isRunning: true,
+          isPaused: false,
+          currentStage: 3,
+          progress: {
+            progress: download.progress,
+            downloadedBytes: download.downloadedBytes,
+            totalBytes: download.totalBytes,
+            downloadSpeed: 0,
+            uploadSpeed: 0,
+            peers: 0,
+            state: download.state,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('[UI] Failed to check for active downloads:', error);
+    }
   };
 
   /**
@@ -194,6 +251,7 @@ export function useDownloads() {
 
     // Methods
     getDownloadState,
+    checkForActiveDownloads,
     getReactiveDownloadState,
     isDownloading,
     initDownload,

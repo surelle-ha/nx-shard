@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
+use std::fs;
 use directories::{BaseDirs, ProjectDirs, UserDirs};
+use log::warn;
 
 use crate::configs::constants::{APP_PATH, CONFIG_PATH, GAME_PATH};
 
@@ -8,13 +10,27 @@ pub fn get_app_path() -> PathBuf {
     user_dirs
         .document_dir()
         .expect("User has no Documents directory")
-        .to_path_buf()
+        .to_path_buf().join(APP_PATH)
 }
 
 pub fn get_game_path() -> PathBuf {
-    get_app_path().join(APP_PATH).join(GAME_PATH)
+    let path = get_app_path().join(GAME_PATH);
+    
+    if !path.exists() {
+        warn!("Game path does not exist. Creating directory: {:?}", path);
+        fs::create_dir_all(&path).expect("Failed to create game directory");
+    }
+    
+    path
 }
 
 pub fn get_config_path() -> PathBuf {
-    get_app_path().join(APP_PATH).join(CONFIG_PATH)
+    let path = get_app_path().join(CONFIG_PATH);
+    
+    if !path.exists() {
+        warn!("Config path does not exist. Creating directory: {:?}", path);
+        fs::create_dir_all(&path).expect("Failed to create config directory");
+    }
+    
+    path
 }
