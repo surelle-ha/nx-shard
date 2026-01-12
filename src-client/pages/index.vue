@@ -9,7 +9,8 @@
   const announcementStore = useAnnouncementStore();
   
   const isExperimental = computed(() => accountStore.account?.isExperimental);
-  
+  const isAnimatedHome = computed(() => accountStore.account?.isAnimatedHome);
+
   const links = ref<ButtonProps[]>([
     {
       label: "Explore Games",
@@ -70,7 +71,7 @@
       <div class="mt-4">
         <div class="relative overflow-hidden">
           <!-- GIF Background -->
-          <div class="absolute inset-0 -z-10">
+          <div v-show="isAnimatedHome" class="absolute inset-0 -z-10">
             <img 
               src="https://kotaku.com/app/uploads/2021/08/22ecb492fc415bbb28dab0bbfd3ad25d.gif" 
               alt="" 

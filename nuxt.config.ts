@@ -24,5 +24,5 @@ export default defineNuxtConfig({
     }
   },
 
-  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/ui']
+  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@nuxt/ui', 'nuxt-charts']
 })

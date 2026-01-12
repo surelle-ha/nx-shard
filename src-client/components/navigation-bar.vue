@@ -41,49 +41,27 @@ const mainItems = ref<NavigationMenuItem[][]>([
       icon: "i-lucide-search",
       to: "/explore",
       badge: {
-        icon: 'i-lucide-flask-conical',
-        label: 'Beta',
-        variant: 'subtle',
-        color: 'warning'
-      }
+        icon: "i-lucide-flask-conical",
+        label: "Beta",
+        variant: "subtle",
+        color: "warning",
+      },
     },
     {
       label: "Library",
       icon: "i-lucide-gamepad-2",
-      to: '/library',
-      children: [
-        {
-          label: "Pokemon ZA",
-          icon: "i-lucide-gamepad",
-        },
-        {
-          label: "Monster Hunter Rise",
-          icon: "i-lucide-gamepad",
-        },
-        {
-          label: "Celeste",
-          icon: "i-lucide-gamepad",
-        },
-        {
-          label: "Pokemon Legends: Arceus",
-          icon: "i-lucide-gamepad",
-        },
-        {
-          label: "The Witcher 3: Wild Hunt",
-          icon: "i-lucide-gamepad",
-        },
-      ],
+      to: "/library",
     },
     {
       label: "Cross Lan Play",
       icon: "i-lucide-globe",
       // to: "/lan-play",
       badge: {
-        icon: 'i-lucide-wrench',
-        label: 'Soon',
-        variant: 'subtle',
-        color: 'warning'
-      }
+        icon: "i-lucide-wrench",
+        label: "Soon",
+        variant: "subtle",
+        color: "warning",
+      },
     },
     {
       label: "Settings",
@@ -94,22 +72,12 @@ const mainItems = ref<NavigationMenuItem[][]>([
           icon: "i-lucide-dot",
           to: "/settings/general",
         },
-        {
-          label: "Source",
-          icon: "i-lucide-dot",
-          to: "/settings/source",
-        },
       ],
     },
     {
-      label: "Donate",
-      icon: "i-lucide-coffee",
-      to: "/donate"
-    },
-    {
-      label: "Device",
-      icon: "i-lucide-laptop",
-      to: "/device",
+      label: "Help & Support",
+      icon: "i-lucide-book",
+      to: "/help",
     },
   ],
 ]);
@@ -139,7 +107,7 @@ if (accountStore.account && accountStore.account.isAdmin) {
         to: "/admin/users",
       },
     ],
-  })
+  });
 }
 
 const bottomItems = computed<NavigationMenuItem[][]>(() => [

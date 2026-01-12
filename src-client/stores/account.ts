@@ -18,7 +18,11 @@ const userToAccountMap = (user: any, config: any): User => {
     isExperimental: config?.isExperimental || false,
     isApproved: config?.isApproved || false,
     isNew: config?.isNew || true,
-    isAdmin: config?.isAdmin || false
+    isAdmin: config?.isAdmin || false,
+    isAnimatedHome: config?.isAnimatedHome,
+    isLogEnable: config?.isLogEnable,
+    isFtpInstall: config?.isFtpInstall,
+    isMtpInstall: config?.isMtpInstall
   };
 };
 
@@ -49,6 +53,7 @@ export const useAccountStore = defineStore("account", () => {
         .single();
 
       account.value = userToAccountMap(user, configData);
+      console.log(account.value)
       library.value = (libraryData as any)?.gameId || [];
 
       if (!account.value.isApproved) {

@@ -11,4 +11,8 @@ export interface User {
   isApproved: boolean;
   isNew: boolean;
   isAdmin: boolean;
+  isAnimatedHome: boolean;
+  isLogEnable: boolean;
+  isFtpInstall: boolean;
+  isMtpInstall: boolean;
 }
