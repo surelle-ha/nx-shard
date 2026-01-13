@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 const packageJsonPath = path.join(__dirname, "..", "package.json");
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 const version = packageJson.version;
-const tag = `v${version}`;
+const tag = `${version}`;
 
 console.log(`Creating release for version: ${version}`);
 console.log(`Tag: ${tag}`);

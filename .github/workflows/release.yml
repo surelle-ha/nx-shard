@@ -46,7 +46,7 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'NX Shard ${{ github.ref_name }}'
+          releaseName: '${{ github.ref_name }}'
           releaseBody: |
             ## What's Changed
             See the assets below to download and install this version.
