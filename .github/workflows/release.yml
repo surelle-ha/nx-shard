@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -14,18 +14,23 @@ jobs:
       fail-fast: false
       matrix:
         platform: [windows-latest]
-        
+
     runs-on: ${{ matrix.platform }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get version without v prefix
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -46,14 +51,14 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: '${{ github.ref_name }}'
+          releaseName: v${{ steps.version.outputs.version }}
           releaseBody: |
             ## What's Changed
             See the assets below to download and install this version.
-            
+
             ### Installation
             - Windows: Download the `.msi` installer
-            
+
             The app will automatically check for updates on launch.
           releaseDraft: false
           prerelease: false
