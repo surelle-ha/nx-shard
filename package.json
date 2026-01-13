@@ -1,7 +1,7 @@
 {
   "name": "nx-shard",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "// Development": "",
@@ -17,10 +17,10 @@
     "version:minor": "node scripts/version.js minor",
     "version:major": "node scripts/version.js major",
     "// Release workflow": "",
-    "release:patch": "npm run version:patch && npm run release:publish",
-    "release:minor": "npm run version:minor && npm run release:publish",
-    "release:major": "npm run version:major && npm run release:publish",
-    "release:publish": "git add . && git commit -m \"Release v$(node -p \\\"require('./package.json').version\\\")\" && git tag v$(node -p \\\"require('./package.json').version\\\") && git push origin main --tags"
+    "release:patch": "npm run version:patch && npm run release:commit",
+    "release:minor": "npm run version:minor && npm run release:commit",
+    "release:major": "npm run version:major && npm run release:commit",
+    "release:commit": "node scripts/release.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
