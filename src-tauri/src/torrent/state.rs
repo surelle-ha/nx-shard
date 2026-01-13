@@ -1,6 +1,6 @@
 use anyhow::Context;
 use librqbit::{AddTorrent, AddTorrentOptions, AddTorrentResponse, ManagedTorrent, Session};
-use log::{info, warn, error};
+use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -9,7 +9,7 @@ use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::RwLock;
 
-use crate::configs::defaults::{get_game_path, get_config_path};
+use crate::configs::defaults::{get_config_path, get_game_path};
 
 #[derive(Serialize, Deserialize)]
 struct SavedTorrent {
@@ -28,7 +28,7 @@ impl TorrentState {
         let state_file = base_path.join(".torrent_state.json");
 
         info!("[Shard_Torrent_Backend] Initializing torrent session...");
-        
+
         let session = Session::new(base_path)
             .await
             .context("error creating shared session")?;
@@ -38,11 +38,14 @@ impl TorrentState {
         // Restore saved torrents
         if state_file.exists() {
             info!("[Shard_Torrent_Backend] Found saved torrent state, restoring...");
-            
+
             if let Ok(data) = tokio::fs::read_to_string(&state_file).await {
                 if let Ok(saved_torrents) = serde_json::from_str::<Vec<SavedTorrent>>(&data) {
-                    info!("[Shard_Torrent_Backend] Restoring {} torrent(s)", saved_torrents.len());
-                    
+                    info!(
+                        "[Shard_Torrent_Backend] Restoring {} torrent(s)",
+                        saved_torrents.len()
+                    );
+
                     let mut handles_guard = handles.write().await;
                     for saved in saved_torrents {
                         let torrent_path = PathBuf::from(&saved.torrent_path);
@@ -52,7 +55,7 @@ impl TorrentState {
                             {
                                 let game_dir =
                                     PathBuf::from(&get_game_path()).join(saved.game_id.to_string());
-                                    
+
                                 match session
                                     .add_torrent(
                                         add_torrent,
@@ -68,17 +71,20 @@ impl TorrentState {
                                 {
                                     Ok(response) => {
                                         match response {
-                                            AddTorrentResponse::Added(id, handle) | 
-                                            AddTorrentResponse::AlreadyManaged(id, handle) => {
+                                            AddTorrentResponse::Added(id, handle)
+                                            | AddTorrentResponse::AlreadyManaged(id, handle) => {
                                                 info!(
                                                     "[Shard_Torrent_Backend] Restored torrent for game {} with id: {}",
                                                     saved.game_id, id
                                                 );
-                                                
+
                                                 // Get initial stats to send to UI
                                                 let stats = handle.stats();
-                                                let progress_percent = (stats.progress_bytes as f64 / stats.total_bytes.max(1) as f64) * 100.0;
-                                                
+                                                let progress_percent = (stats.progress_bytes
+                                                    as f64
+                                                    / stats.total_bytes.max(1) as f64)
+                                                    * 100.0;
+
                                                 // Emit download-restored event to notify UI
                                                 let _ = app_handle.emit(
                                                     "download-restored",
@@ -90,7 +96,7 @@ impl TorrentState {
                                                         "totalBytes": stats.total_bytes,
                                                     }),
                                                 );
-                                                
+
                                                 // UNPAUSE the torrent to resume downloading
                                                 if let Err(e) = session.unpause(&handle).await {
                                                     warn!(
@@ -102,7 +108,7 @@ impl TorrentState {
                                                         "[Shard_Torrent_Backend] Resumed download for game {}",
                                                         saved.game_id
                                                     );
-                                                    
+
                                                     // Start progress monitoring for restored torrent
                                                     Self::spawn_progress_monitor(
                                                         saved.game_id,
@@ -223,7 +229,10 @@ impl TorrentState {
 
                     // Break if completed
                     if stats.finished {
-                        info!("[Shard_Torrent_Backend] Game {} download completed!", game_id);
+                        info!(
+                            "[Shard_Torrent_Backend] Game {} download completed!",
+                            game_id
+                        );
                         let _ = app_handle.emit(
                             "download-complete",
                             serde_json::json!({
@@ -265,22 +274,20 @@ impl TorrentState {
 
                 if !saved_torrents.is_empty() {
                     match serde_json::to_string(&saved_torrents) {
-                        Ok(json) => {
-                            match tokio::fs::write(&state_file, json).await {
-                                Ok(_) => {
-                                    info!(
-                                        "[Shard_Torrent_Backend] Auto-saved state for {} torrent(s)",
-                                        saved_torrents.len()
-                                    );
-                                }
-                                Err(e) => {
-                                    error!(
-                                        "[Shard_Torrent_Backend] Failed to write torrent state: {}",
-                                        e
-                                    );
-                                }
+                        Ok(json) => match tokio::fs::write(&state_file, json).await {
+                            Ok(_) => {
+                                info!(
+                                    "[Shard_Torrent_Backend] Auto-saved state for {} torrent(s)",
+                                    saved_torrents.len()
+                                );
                             }
-                        }
+                            Err(e) => {
+                                error!(
+                                    "[Shard_Torrent_Backend] Failed to write torrent state: {}",
+                                    e
+                                );
+                            }
+                        },
                         Err(e) => {
                             error!(
                                 "[Shard_Torrent_Backend] Failed to serialize torrent state: {}",

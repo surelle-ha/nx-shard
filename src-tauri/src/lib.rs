@@ -554,7 +554,7 @@ pub fn run() {
         .with(
             fmt::layer()
                 .with_writer(std::io::stdout)
-                .with_filter(EnvFilter::new("info")), 
+                .with_filter(EnvFilter::new("info")),
         )
         .with(
             fmt::layer()
@@ -564,6 +564,8 @@ pub fn run() {
         .init();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,

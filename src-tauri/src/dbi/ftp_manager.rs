@@ -450,9 +450,9 @@ impl FTPManager {
         use std::io::Cursor;
         use std::io::Read;
         use std::time::Instant;
-        use suppaftp::FtpStream;
         use suppaftp::native_tls::TlsConnector;
         use suppaftp::types::FileType;
+        use suppaftp::FtpStream;
 
         info!(
             "Starting FTP transfer: {} -> {}",
