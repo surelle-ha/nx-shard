@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { getVersion } from "@tauri-apps/api/app";
 
 const update = await check();
 const accountStore = useAccountStore();
@@ -11,6 +12,7 @@ const toast = useToast();
 const sidebarOpen = ref(true);
 const sidebarWidth = 248;
 const isExperimental = computed(() => accountStore.account?.isExperimental);
+const appVersion = await getVersion();
 
 const handleLogout = async () => {
   try {
@@ -52,7 +54,7 @@ const handleUpdate = async () => {
     console.log("update installed");
     await relaunch();
   } else {
-    console.error(`No update found.`)
+    console.error(`No update found.`);
   }
 };
 
@@ -157,16 +159,18 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
           },
         },
         {
-          label: "Version 1.0.0",
+          label: `Version ${appVersion}`,
           icon: "i-lucide-rocket",
-          badge: "Update",
+          badge: update ? "Update" : "Latest",
+          click: update ? handleUpdate : undefined,
         },
       ]
     : [
         {
-          label: `Version ${globalStore.settings.version}`,
+          label: `Version ${appVersion}`,
           icon: "i-lucide-rocket",
           badge: update ? "Update" : "Latest",
+          click: update ? handleUpdate : undefined,
         },
       ],
 ]);
