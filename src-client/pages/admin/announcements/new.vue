@@ -65,7 +65,7 @@ const handleCancel = () => {
 
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6"
+    class="min-h-screen p-6"
   >
     <div class="max-w-5xl mx-auto">
       <!-- Header -->
@@ -203,7 +203,7 @@ const handleCancel = () => {
                 class="font-mono text-sm w-100"
               />
               <div
-                class="absolute bottom-3 right-3 bg-white dark:bg-gray-900 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700"
+                class="absolute bottom-3 right-3 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700"
               >
                 <span class="text-xs font-medium text-gray-500">
                   {{ content.length }} characters
@@ -217,7 +217,7 @@ const handleCancel = () => {
       <!-- Action Buttons - Fixed at Bottom -->
       <div class="sticky bottom-6 mt-8">
         <UCard
-          class="shadow-2xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg"
+          class="shadow-2xl border-0 backdrop-blur-lg"
         >
           <div class="flex items-center justify-between">
             <div

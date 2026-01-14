@@ -73,7 +73,7 @@ const getCoverImage = (content: any) => {
 
 <template>
   <div
-    class="mt-6 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+    class="mt-6 min-h-screen"
   >
     <div v-if="isLoading" class="max-w-4xl mx-auto p-6">
       <USkeleton class="h-12 w-32 mb-8" />

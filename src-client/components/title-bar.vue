@@ -3,11 +3,17 @@
     class="titlebar text-black dark:text-white px-2 py-[5px] text-sm select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 overflow-hidden"
     :class="
       isOnline
-        ? 'bg-white dark:bg-gray-900 transition-colors duration-300 ease-in-out'
+        ? 'transition-colors duration-300 ease-in-out'
         : 'bg-warning-500 dark:bg-warning-600'
     "
     data-tauri-drag-region
   >
+    <!-- Backdrop blur layer with gradient mask -->
+    <div
+      v-if="isOnline"
+      class="absolute inset-0 backdrop-blur-md blur-gradient pointer-events-none"
+    ></div>
+
     <!-- Shimmer overlay when offline -->
     <div
       v-if="!isOnline"
@@ -84,6 +90,12 @@
 .window-btn {
   -webkit-app-region: no-drag;
   app-region: no-drag;
+}
+
+/* Gradient mask for blur effect */
+.blur-gradient {
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 @keyframes shimmer {

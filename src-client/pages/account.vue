@@ -66,7 +66,7 @@ const handleReset = () => {
 
 <template>
   <div
-    class="mt-6 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6"
+    class="mt-6 min-h-screen p-6"
   >
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
@@ -281,7 +281,7 @@ const handleReset = () => {
       <!-- Action Buttons - Sticky at Bottom -->
       <div class="sticky bottom-6 mt-8" v-if="!isLoading">
         <UCard
-          class="shadow-2xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg"
+          class="shadow-2xl border-0 backdrop-blur-lg"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">

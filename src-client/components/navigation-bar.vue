@@ -175,7 +175,7 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
 <template>
   <aside
     :class="[
-      'fixed left-0 top-[30px] h-[calc(100vh-30px)] z-40 transition-transform duration-300 ease-in-out bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800',
+      'fixed left-0 top-[30px] h-[calc(100vh-30px)] z-40 transition-transform duration-300 ease-in-out border-r border-gray-200 dark:border-gray-800',
       sidebarOpen ? 'translate-x-0' : '-translate-x-full',
     ]"
     :style="{ width: `${sidebarWidth}px` }"

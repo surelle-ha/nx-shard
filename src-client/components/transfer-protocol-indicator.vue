@@ -253,7 +253,7 @@ onUnmounted(() => {
       <div class="flex flex-col gap-4 p-4">
         <!-- FTP Connection Status -->
         <div
-          class="border border-gray-200 dark:border-gray-800 rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
+          class="border border-gray-200 dark:border-gray-800 rounded-lg p-4"
         >
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -430,7 +430,7 @@ onUnmounted(() => {
             <div
               v-for="(game, index) in transferQueue"
               :key="game.filePath"
-              class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded"
+              class="flex items-center justify-between p-2 rounded"
             >
               <div class="flex-1">
                 <p class="text-sm font-medium">{{ game.fileName }}</p>
@@ -490,7 +490,7 @@ onUnmounted(() => {
             <div
               v-for="game in availableGames"
               :key="game.filePath"
-              class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="flex items-center justify-between p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <div class="flex-1">
                 <p class="text-sm font-medium">{{ game.gameTitle }}</p>
