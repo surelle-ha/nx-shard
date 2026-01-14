@@ -28,6 +28,7 @@ const handleLogout = async () => {
 };
 
 const handleUpdate = async () => {
+  console.log('Update Handled')
   if (update) {
     console.log(
       `found update ${update.version} from ${update.date} with notes ${update.body}`
@@ -158,21 +159,8 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
             variant: "subtle",
           },
         },
-        {
-          label: `Version ${appVersion}`,
-          icon: "i-lucide-rocket",
-          badge: update ? "Update" : "Latest",
-          click: update ? handleUpdate : undefined,
-        },
       ]
-    : [
-        {
-          label: `Version ${appVersion}`,
-          icon: "i-lucide-rocket",
-          badge: update ? "Update" : "Latest",
-          click: update ? handleUpdate : undefined,
-        },
-      ],
+    : [],
 ]);
 </script>
 
@@ -209,11 +197,28 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
         />
 
         <UButton
+          @click="handleUpdate"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-rocket"
+          class="w-full justify-start cursor-pointer group relative w-full flex items-center gap-1.5 font-medium text-sm before:absolute before:z-[-1] before:rounded-md focus:outline-none focus-visible:outline-none dark:focus-visible:outline-none focus-visible:before:ring-inset focus-visible:before:ring-2 focus-visible:before:ring-primary flex-row px-2.5 py-1.5 before:inset-y-px before:inset-x-0 text-muted hover:text-highlighted hover:before:bg-elevated/50 transition-colors before:transition-colors"
+          size="md"
+        >
+          Version {{ appVersion }}
+          <UBadge
+            v-if="update"
+            :label="`${update?.version} Available`"
+            variant="subtle"
+            size="sm"
+          />
+        </UButton>
+
+        <UButton
           @click="handleLogout"
           color="neutral"
           variant="ghost"
           icon="i-lucide-log-out"
-          class="w-full justify-start mt-2 cursor-pointer"
+          class="w-full justify-start cursor-pointer group relative w-full flex items-center gap-1.5 font-medium text-sm before:absolute before:z-[-1] before:rounded-md focus:outline-none focus-visible:outline-none dark:focus-visible:outline-none focus-visible:before:ring-inset focus-visible:before:ring-2 focus-visible:before:ring-primary flex-row px-2.5 py-1.5 before:inset-y-px before:inset-x-0 text-muted hover:text-highlighted hover:before:bg-elevated/50 transition-colors before:transition-colors"
           size="md"
         >
           Logout
