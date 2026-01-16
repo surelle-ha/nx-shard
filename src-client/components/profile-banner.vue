@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const accountStore = useAccountStore();
+const router = useRouter();
 
 const isLoading = ref(true);
 const displayName = computed(() => accountStore.account?.displayName);
@@ -14,7 +15,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex items-center gap-4 mb-4">
+  <div class="flex items-center gap-4 mb-4 cursor-pointer p-2 rounded-md hover:bg-neutral-800" @click="router.push(`/account`)">
     <USkeleton v-if="isLoading" class="h-12 w-12 rounded-full" />
     <UAvatar v-else :src="accountStore.account?.imageUrl" :alt="displayName || 'NA'" class="h-12 w-12" />
 

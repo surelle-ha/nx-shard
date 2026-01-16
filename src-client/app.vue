@@ -59,7 +59,7 @@ onMounted(async () => {
 <template>
   <TitleBar />
   <UApp :toaster="{ position: 'top-center' }">
-    <NuxtLayout @contextmenu="handleContextMenu">
+    <NuxtLayout @contextmenu="handleContextMenu" class="no-select">
       <NuxtPage />
     </NuxtLayout>
   </UApp>

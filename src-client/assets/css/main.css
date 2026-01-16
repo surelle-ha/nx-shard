@@ -6,6 +6,12 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
+.no-select {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 /* Base scrollbar */
 .shard-scroll {
   scrollbar-width: thin; /* Firefox */

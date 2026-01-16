@@ -68,12 +68,6 @@ const mainItems = ref<NavigationMenuItem[][]>([
       to: "/",
     },
     {
-      label: "Account",
-      icon: "i-lucide-user",
-      defaultOpen: true,
-      to: "/account",
-    },
-    {
       label: "Explore",
       icon: "i-lucide-search",
       to: "/explore",
@@ -195,6 +189,8 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
           :items="bottomItems"
           class="data-[orientation=vertical]:w-full"
         />
+
+        <ChatSystem />
 
         <UButton
           @click="handleUpdate"

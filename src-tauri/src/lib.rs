@@ -16,9 +16,9 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::{Emitter, Manager, State};
+use tauri::{Emitter, Listener, Manager, State};
 use tokio::sync::RwLock;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
+use tracing_subscriber::{EnvFilter, Layer, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::dbi::{ftp_discovery, ftp_manager};
 
@@ -536,11 +536,6 @@ fn is_game_downloaded(invoke_message: GameMeta) -> Result<bool, String> {
     Ok(contains_game_file(&game_dir))
 }
 
-#[tauri::command]
-fn get_version() -> String {
-    "1.0.0".into()
-}
-
 // ------------------ RUN ------------------
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -589,6 +584,21 @@ pub fn run() {
             let ftp_manager = ftp_manager::FTPManager::new(app.handle().clone());
             app.manage(Arc::new(Mutex::new(Some(ftp_manager))));
 
+            if let Some(window) = app.get_webview_window("main") {
+                // Listen for when the window is created and show it
+                let window_clone = window.clone();
+                window.once("tauri://created", move |_| {
+                    let _ = window_clone.show();
+                });
+
+                // Also add a fallback to show after a short delay
+                let window_clone2 = window.clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(500));
+                    let _ = window_clone2.show();
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -617,8 +627,7 @@ pub fn run() {
             uninstall_game,
             extract_and_clean,
             get_active_downloads,
-            is_game_downloaded,
-            get_version
+            is_game_downloaded
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

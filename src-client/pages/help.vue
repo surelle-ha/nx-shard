@@ -5,53 +5,47 @@ definePageMeta({
 
 const faqs = [
   {
-    label: "What is Nx-Shard?",
+    label: "What is NxShard?",
     icon: "i-heroicons-question-mark-circle",
     content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      "NxShard is a game downloader powered by a peer-to-peer (torrent-based) mechanism. It is designed to help users easily download, monitor, and install games in one place.",
     defaultOpen: true,
   },
   {
     label: "How do I get started with Nx-Shard?",
     icon: "i-heroicons-rocket-launch",
     content:
-      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-  {
-    label: "What are the system requirements?",
-    icon: "i-heroicons-computer-desktop",
-    content:
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+      "Getting started with Nx-Shard is simple: (1) Navigate to the Explore tab and select the game you want to download. (2) View and manage your selected games in the Library tab. (3) Monitor the download progress and install the game once it’s complete.",
   },
   {
     label: "How do I configure Nx-Shard?",
     icon: "i-heroicons-cog-6-tooth",
     content:
-      "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.",
+      "You can configure Nx-Shard through the Settings page. From there, you can adjust download locations, bandwidth limits, and other preferences to optimize performance based on your system and network.",
   },
   {
     label: "Can I contribute to the project?",
     icon: "i-heroicons-users",
     content:
-      "Consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam.",
+      "Yes, contributions are welcome. You can help by reporting bugs, suggesting features, improving documentation, or contributing code through the project’s repository.",
   },
   {
     label: "Where can I find documentation?",
     icon: "i-heroicons-book-open",
     content:
-      "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
+      "Official documentation is available in the project repository and website. It includes setup guides, usage instructions, and troubleshooting tips to help you get the most out of Nx-Shard.",
   },
   {
     label: "How do I update Nx-Shard?",
     icon: "i-heroicons-arrow-path",
     content:
-      "Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit.",
+      "Nx-Shard notifies you when a new update is available. You can update the app directly through the built-in update feature or by downloading the latest version from the official release page.",
   },
   {
     label: "What if I encounter an error?",
     icon: "i-heroicons-exclamation-triangle",
     content:
-      "Quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint.",
+      "If you encounter an error, check the error message and logs for details. You can also refer to the documentation or report the issue through the project’s support or issue tracker for assistance.",
   },
 ];
 </script>

@@ -80,8 +80,8 @@
           </div>
           
           <UPageHero
-            :title="`🌿\nnxShard`"
-            description="A Nintendo Switch desktop client to download and install games."
+            :title="`🎮\nNxShard`"
+            description="Your all-in-one NS game downloader and installer"
             :links="links"
             class="whitespace-pre-line pb-10 relative z-10"
           />
