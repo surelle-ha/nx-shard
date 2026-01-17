@@ -119,7 +119,7 @@ const handleAddToLibrary = async () => {
         :icon="isInLibrary ? 'i-lucide-check' : 'i-lucide-plus'"
         :label="isInLibrary ? 'In Library' : 'Add to Library'"
         :variant="isInLibrary ? 'solid' : 'ghost'"
-        :color="isInLibrary ? 'success' : undefined"
+        :color="isInLibrary ? 'primary' : undefined"
         :loading="isAdding"
         :disabled="isAdding"
         class="w-full cursor-pointer rounded-t-none"

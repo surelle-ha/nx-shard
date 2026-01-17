@@ -28,7 +28,7 @@ const handleLogout = async () => {
 };
 
 const handleUpdate = async () => {
-  console.log('Update Handled')
+  console.log("Update Handled");
   if (update) {
     console.log(
       `found update ${update.version} from ${update.date} with notes ${update.body}`
@@ -68,6 +68,11 @@ const mainItems = ref<NavigationMenuItem[][]>([
       to: "/",
     },
     {
+      label: "News",
+      icon: "i-lucide-newspaper",
+      to: "/news",
+    },
+    {
       label: "Explore",
       icon: "i-lucide-search",
       to: "/explore",
@@ -84,9 +89,20 @@ const mainItems = ref<NavigationMenuItem[][]>([
       to: "/library",
     },
     {
+      label: "Watch Anime",
+      icon: "i-lucide-tv",
+      to: "/watch-anime",
+      badge: {
+        icon: "i-lucide-flask-conical",
+        label: "Beta",
+        variant: "subtle",
+        color: "warning",
+      },
+    },
+    {
       label: "Cross Lan Play",
       icon: "i-lucide-globe",
-      // to: "/lan-play",
+      to: "/lan-play",
       badge: {
         icon: "i-lucide-wrench",
         label: "Soon",
@@ -109,6 +125,12 @@ const mainItems = ref<NavigationMenuItem[][]>([
       label: "Help & Support",
       icon: "i-lucide-book",
       to: "/help",
+    },
+    {
+      label: "Feature List",
+      icon: "i-lucide-book",
+      to: "/help",
+      enable: false,
     },
   ],
 ]);
