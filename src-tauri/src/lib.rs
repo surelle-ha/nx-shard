@@ -1,5 +1,6 @@
 mod configs;
 mod dbi;
+mod plugins;
 mod torrent;
 
 use anyhow::Context;
@@ -26,6 +27,8 @@ use crate::torrent::state::TorrentState;
 
 use crate::configs::constants::{APP_PATH, CONFIG_PATH, GAME_PATH};
 use crate::configs::defaults::{get_app_path, get_config_path, get_game_path};
+
+use crate::plugins::plugin_manager;
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone)]
@@ -584,6 +587,13 @@ pub fn run() {
             let ftp_manager = ftp_manager::FTPManager::new(app.handle().clone());
             app.manage(Arc::new(Mutex::new(Some(ftp_manager))));
 
+            // Start all installed plugins
+            if let Err(e) = plugin_manager::PluginManager::start_plugins() {
+                tracing::error!("Failed to start plugins: {}", e);
+            } else {
+                tracing::info!("Plugins started successfully");
+            }
+
             if let Some(window) = app.get_webview_window("main") {
                 // Listen for when the window is created and show it
                 let window_clone = window.clone();
@@ -616,6 +626,13 @@ pub fn run() {
             ftp_manager::remove_from_transfer_queue,
             ftp_manager::get_current_transfer,
             ftp_manager::is_ftp_transferring,
+            // Plugin commands
+            plugin_manager::get_available_plugins,
+            plugin_manager::get_installed_plugins, // <- ADDED THIS
+            plugin_manager::install_plugin,
+            plugin_manager::remove_plugin,
+            plugin_manager::restart_plugin,
+            plugin_manager::restart_plugins,
             // Torrent commands
             check_file_system,
             get_game_meta,
@@ -629,6 +646,19 @@ pub fn run() {
             get_active_downloads,
             is_game_downloaded
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .on_page_load(|webview, _payload| {
+            // Optional: Notify frontend that plugins are ready
+            let _ = webview.emit("plugins-ready", ());
+        })
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app_handle, event| {
+            // Graceful shutdown: stop all plugins when app closes
+            if let tauri::RunEvent::Exit = event {
+                tracing::info!("Application exiting, stopping plugins...");
+                if let Err(e) = plugin_manager::stop_all_plugins() {
+                    tracing::error!("Failed to stop plugins: {}", e);
+                }
+            }
+        });
 }

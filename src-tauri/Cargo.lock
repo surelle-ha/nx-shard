@@ -3674,6 +3674,7 @@ dependencies = [
  "hex 0.4.3",
  "librqbit",
  "log",
+ "once_cell",
  "parking_lot",
  "reqwest",
  "serde",
