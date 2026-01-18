@@ -128,7 +128,7 @@ const mainItems = computed<NavigationMenuItem[][]>(() => {
   if (isAnimePluginInstalled.value) {
     items.push({
       label: "Watch Anime",
-      icon: "i-lucide-tv",
+      icon: "i-lucide-tv-minimal",
       to: "/watch-anime",
       badge: {
         icon: "i-lucide-flask-conical",
@@ -171,14 +171,16 @@ const mainItems = computed<NavigationMenuItem[][]>(() => {
       label: "Help & Support",
       icon: "i-lucide-book",
       to: "/help",
-    },
-    {
-      label: "Feature List",
-      icon: "i-lucide-book",
-      to: "/help",
-      enable: false,
     }
   );
+
+  if (isExperimental.value) {
+    items.push(
+      {
+        label: "Feature List",
+        icon: "i-lucide-test-tube"
+      });
+  }
 
   // Add admin items if user is admin
   if (accountStore.account && accountStore.account.isAdmin) {

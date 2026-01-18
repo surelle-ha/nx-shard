@@ -2,6 +2,7 @@ mod configs;
 mod dbi;
 mod plugins;
 mod torrent;
+mod http;
 
 use anyhow::Context;
 use directories::{BaseDirs, ProjectDirs, UserDirs};
@@ -29,6 +30,8 @@ use crate::configs::constants::{APP_PATH, CONFIG_PATH, GAME_PATH};
 use crate::configs::defaults::{get_app_path, get_config_path, get_game_path};
 
 use crate::plugins::plugin_manager;
+
+use crate::http::proxy;
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone)]
@@ -608,6 +611,12 @@ pub fn run() {
                     let _ = window_clone2.show();
                 });
             }
+
+            tauri::async_runtime::spawn(async {
+                if let Err(e) = proxy::start_proxy().await {
+                    tracing::error!("Proxy server error: {}", e);
+                }
+            });
 
             Ok(())
         })

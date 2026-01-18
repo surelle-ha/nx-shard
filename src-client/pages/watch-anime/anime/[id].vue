@@ -442,19 +442,22 @@ const watchEpisode = (episodeNumber: number = 1) => {
                 <div v-else-if="episodes.length > 0"
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     <div v-for="episode in episodes" :key="episode.id" @click="watchEpisode(episode.episodeNumber)"
-                        class="episode-card group cursor-pointer">
+                        class="episode-card group cursor-pointer rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-sm hover:shadow-lg hover:border-primary-500 transition-all duration-200">
                         <div class="flex items-center gap-4">
+
                             <!-- Episode Number Badge -->
-                            <div class="episode-number">
+                            <div
+                                class="episode-number flex h-10 w-10 items-center justify-center rounded-full bg-primary-500/10 text-primary-500 font-semibold text-sm">
                                 {{ episode.episodeNumber }}
                             </div>
 
                             <!-- Episode Info -->
                             <div class="flex-1 min-w-0">
-                                <p class="episode-title">
+                                <p class="episode-title text-sm font-semibold text-white truncate">
                                     {{ episode.title || `Episode ${episode.episodeNumber}` }}
                                 </p>
-                                <p v-if="episode.isFiller" class="episode-meta">
+                                <p v-if="episode.isFiller"
+                                    class="episode-meta mt-1 flex items-center gap-2 text-xs text-slate-300">
                                     <UIcon name="i-heroicons-exclamation-circle" class="w-4 h-4" />
                                     Filler
                                 </p>
@@ -462,10 +465,11 @@ const watchEpisode = (episodeNumber: number = 1) => {
 
                             <!-- Play Icon -->
                             <UIcon name="i-heroicons-play-circle"
-                                class="w-8 h-8 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                class="w-8 h-8 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                         </div>
                     </div>
                 </div>
+
 
                 <div v-else class="empty-state">
                     <UIcon name="i-heroicons-film" class="w-16 h-16 text-gray-400" />
