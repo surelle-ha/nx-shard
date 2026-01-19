@@ -4,6 +4,10 @@ use std::collections::HashMap;
 use std::process::{Child, Command};
 use std::sync::Mutex;
 
+// Platform-specific imports for Windows
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 #[derive(Clone, serde::Serialize)]
 pub struct PluginItem {
     pub id: String,
@@ -57,7 +61,18 @@ fn start_plugin_internal(plugin_id: &str) -> Result<(), String> {
 
     let exe_path = plugin_path.join(format!("{}.exe", plugin.name));
 
-    let child = Command::new(&exe_path)
+    // Create command with hidden console window on Windows
+    let mut cmd = Command::new(&exe_path);
+
+    #[cfg(target_os = "windows")]
+    {
+        // CREATE_NO_WINDOW flag = 0x08000000
+        // This prevents the console window from appearing
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+
+    let child = cmd
         .spawn()
         .map_err(|e| format!("Failed to start plugin: {}", e))?;
 

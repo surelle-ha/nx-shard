@@ -44,17 +44,9 @@
   
   const footerItems: NavigationMenuItem[] = [
     {
-      label: "Browse",
-      to: "/browse",
-    },
-    {
-      label: "Schedule",
-      to: "/schedule",
-    },
-    {
-      label: "Rankings",
-      to: "/rankings",
-    },
+      label: "Search",
+      to: "/watch-anime/search",
+    }
   ];
   
   onMounted(async () => {
@@ -185,9 +177,6 @@
                   icon="i-heroicons-play"
                 >
                   Watch Now
-                </UButton>
-                <UButton variant="outline" size="lg" icon="i-heroicons-plus">
-                  Add to List
                 </UButton>
               </div>
             </div>

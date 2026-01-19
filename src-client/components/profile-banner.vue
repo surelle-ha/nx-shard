@@ -29,6 +29,11 @@ onMounted(() => {
 
       <USkeleton v-if="isLoading" class="h-4 w-[100px]" />
       <span
+        v-else-if="accountStore.account?.isAdmin"
+        class="text-xs text-gray-500 dark:text-gray-400 w-[150px] truncate"
+        >👾 The Developer</span
+      >
+      <span
         v-else
         class="text-xs text-gray-500 dark:text-gray-400 w-[150px] truncate"
         >{{ accountStore.account?.email }}</span

@@ -1,8 +1,8 @@
 mod configs;
 mod dbi;
+mod http;
 mod plugins;
 mod torrent;
-mod http;
 
 use anyhow::Context;
 use directories::{BaseDirs, ProjectDirs, UserDirs};
@@ -226,16 +226,27 @@ async fn download_game(
     tokio::spawn({
         let handle = handle.clone();
         let app_handle = app_handle.clone();
+        let state_handles = state.handles.clone();
         async move {
             loop {
                 tokio::time::sleep(Duration::from_secs(1)).await;
+                
+                // Check if torrent was removed from state (e.g., by clear_game_path)
+                {
+                    let handles = state_handles.read().await;
+                    if !handles.contains_key(&game_id) {
+                        info!("[Shard_Torrent_Backend] Torrent {} was removed, stopping progress monitor", game_id);
+                        break;
+                    }
+                }
+                
                 let stats = handle.stats();
                 let elapsed = start_time.elapsed().as_secs();
-
+    
                 if let Some(live) = &stats.live {
                     let progress_percent =
                         (stats.progress_bytes as f64 / stats.total_bytes.max(1) as f64) * 100.0;
-
+    
                     info!(
                         "[{}s] Game {} | State: {:?} | Progress: {:.1}% | Downloaded: {:.2} MB / {:.2} MB | Speed: {:.2} MB/s | Peers: {}",
                         elapsed,
@@ -247,7 +258,7 @@ async fn download_game(
                         live.download_speed.mbps,
                         live.snapshot.peer_stats.live,
                     );
-
+    
                     // Emit to frontend
                     let _ = app_handle.emit(
                         "download-progress",
@@ -262,7 +273,7 @@ async fn download_game(
                             "peers": live.snapshot.peer_stats.live,
                         }),
                     );
-
+    
                     // Warn if stuck at 0 peers
                     if elapsed > 30 && live.snapshot.peer_stats.live == 0 {
                         warn!(
@@ -273,12 +284,12 @@ async fn download_game(
                 } else {
                     let progress_percent =
                         (stats.progress_bytes as f64 / stats.total_bytes.max(1) as f64) * 100.0;
-
+    
                     info!(
                         "[{}s] Game {} | State: {:?} | Progress: {:.1}%",
                         elapsed, game_id, stats.state, progress_percent,
                     );
-
+    
                     // Emit to frontend
                     let _ = app_handle.emit(
                         "download-progress",
@@ -294,8 +305,7 @@ async fn download_game(
                         }),
                     );
                 }
-
-                // Break if completed
+    
                 if stats.finished {
                     break;
                 }
@@ -542,6 +552,135 @@ fn is_game_downloaded(invoke_message: GameMeta) -> Result<bool, String> {
     Ok(contains_game_file(&game_dir))
 }
 
+#[tauri::command]
+async fn clear_game_path(
+    state: State<'_, TorrentState>,
+    app_handle: tauri::AppHandle,
+) -> Result<(), String> {
+    info!("[Shard_Torrent_Backend] Starting to clear all files in game path");
+
+    let game_path = get_game_path();
+
+    if !game_path.exists() {
+        return Err("Game path does not exist".to_string());
+    }
+
+    // Get all active game IDs before removing them
+    let active_game_ids: Vec<u32> = {
+        let handles = state.handles.read().await;
+        handles.keys().copied().collect()
+    };
+
+    info!(
+        "[Shard_Torrent_Backend] Found {} active torrents to stop",
+        active_game_ids.len()
+    );
+
+    // Stop and remove all active torrents
+    for game_id in active_game_ids {
+        info!(
+            "[Shard_Torrent_Backend] Stopping torrent for game {}",
+            game_id
+        );
+
+        if let Some((torrent_id, handle)) = {
+            let handles = state.handles.read().await;
+            handles.get(&game_id).cloned()
+        } {
+            // Emit a stop signal to frontend (this helps stop the progress loop)
+            let _ = app_handle.emit(
+                "download-stopped",
+                serde_json::json!({
+                    "gameId": game_id,
+                }),
+            );
+
+            // Pause torrent first
+            if let Err(e) = state.session.pause(&handle).await {
+                warn!(
+                    "[Shard_Torrent_Backend] Failed to pause torrent {}: {}",
+                    game_id, e
+                );
+            }
+
+            // Remove from session
+            if let Err(e) = state
+                .session
+                .delete(librqbit::api::TorrentIdOrHash::Id(torrent_id), true)
+                .await
+            {
+                warn!(
+                    "[Shard_Torrent_Backend] Failed to remove torrent {}: {}",
+                    game_id, e
+                );
+            }
+
+            // Remove from app state
+            let mut handles = state.handles.write().await;
+            handles.remove(&game_id);
+
+            info!(
+                "[Shard_Torrent_Backend] Successfully removed torrent {}",
+                game_id
+            );
+        }
+    }
+
+    // Small delay to allow async tasks to clean up
+    tokio::time::sleep(Duration::from_millis(500)).await;
+
+    // Now delete all directories in game path
+    match fs::read_dir(&game_path) {
+        Ok(entries) => {
+            let mut deleted_count = 0;
+            let mut error_count = 0;
+
+            for entry in entries.flatten() {
+                let path = entry.path();
+
+                if path.is_dir() {
+                    match fs::remove_dir_all(&path) {
+                        Ok(_) => {
+                            info!("[Shard_Torrent_Backend] Deleted directory: {:?}", path);
+                            deleted_count += 1;
+                        }
+                        Err(e) => {
+                            error!("[Shard_Torrent_Backend] Failed to delete {:?}: {}", path, e);
+                            error_count += 1;
+                        }
+                    }
+                } else if path.is_file() {
+                    match fs::remove_file(&path) {
+                        Ok(_) => {
+                            info!("[Shard_Torrent_Backend] Deleted file: {:?}", path);
+                            deleted_count += 1;
+                        }
+                        Err(e) => {
+                            error!("[Shard_Torrent_Backend] Failed to delete {:?}: {}", path, e);
+                            error_count += 1;
+                        }
+                    }
+                }
+            }
+
+            info!(
+                "[Shard_Torrent_Backend] Clear complete. Deleted: {}, Errors: {}",
+                deleted_count, error_count
+            );
+
+            if error_count > 0 {
+                Err(format!(
+                    "Cleared {} items with {} errors",
+                    deleted_count, error_count
+                ))
+            } else {
+                Ok(())
+            }
+        }
+        Err(e) => Err(format!("Failed to read game path directory: {}", e)),
+    }
+}
+
 // ------------------ RUN ------------------
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -637,7 +776,7 @@ pub fn run() {
             ftp_manager::is_ftp_transferring,
             // Plugin commands
             plugin_manager::get_available_plugins,
-            plugin_manager::get_installed_plugins, // <- ADDED THIS
+            plugin_manager::get_installed_plugins,
             plugin_manager::install_plugin,
             plugin_manager::remove_plugin,
             plugin_manager::restart_plugin,
@@ -653,7 +792,8 @@ pub fn run() {
             uninstall_game,
             extract_and_clean,
             get_active_downloads,
-            is_game_downloaded
+            is_game_downloaded,
+            clear_game_path
         ])
         .on_page_load(|webview, _payload| {
             // Optional: Notify frontend that plugins are ready

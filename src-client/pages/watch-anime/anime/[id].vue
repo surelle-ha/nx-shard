@@ -285,21 +285,21 @@ const watchEpisode = (episodeNumber: number = 1) => {
                     <button @click="activeTab = 'overview'; scrollToSection('overview')" :class="[
                         'tab-button',
                         activeTab === 'overview' ? 'tab-active' : 'tab-inactive'
-                    ]">
+                    ]" class="cursor-pointer">
                         <UIcon name="i-heroicons-information-circle" class="w-5 h-5" />
                         Overview
                     </button>
                     <button @click="activeTab = 'episodes'; scrollToSection('episodes')" :class="[
                         'tab-button',
                         activeTab === 'episodes' ? 'tab-active' : 'tab-inactive'
-                    ]">
+                    ]" class="cursor-pointer">
                         <UIcon name="i-heroicons-play-circle" class="w-5 h-5" />
                         Episodes
                     </button>
                     <button @click="activeTab = 'recommendations'; scrollToSection('recommendations')" :class="[
                         'tab-button',
                         activeTab === 'recommendations' ? 'tab-active' : 'tab-inactive'
-                    ]">
+                    ]" class="cursor-pointer">
                         <UIcon name="i-heroicons-sparkles" class="w-5 h-5" />
                         Recommendations
                     </button>

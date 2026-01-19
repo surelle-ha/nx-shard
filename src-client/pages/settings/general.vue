@@ -16,6 +16,7 @@ definePageMeta({
 const accountStore = useAccountStore();
 const toast = useToast();
 const isLoading = ref(true);
+const isClearing = ref(false);
 
 /* =======================
        AUTOSTART HELPERS
@@ -102,6 +103,32 @@ onMounted(async () => {
     isInitialized.value = true;
   }
 });
+
+const clearAllGames = async () => {
+  if (!confirm('Are you sure you want to clear all game files? This action cannot be undone!')) {
+    return;
+  }
+
+  isClearing.value = true;
+
+  try {
+    await invoke('clear_game_path');
+
+    toast.add({
+      title: "Success",
+      description: "All game files have been cleared successfully",
+      color: "primary",
+    });
+  } catch (error: any) {
+    toast.add({
+      title: "Error",
+      description: error.message || "Failed to clear game files",
+      color: "error",
+    });
+  } finally {
+    isClearing.value = false;
+  }
+};
 
 /* =======================
        WATCHERS
@@ -277,62 +304,61 @@ watch(
       </div>
 
       <div class="p-4">
-        <USwitch
-          size="lg"
-          v-model="experimentValue"
-          label="Enable Experimental Mode"
-          description="By enabling this mode, you'll be able to use untested features and games."
-          class="p-2"
-        />
+        <USwitch size="lg" v-model="experimentValue" label="Enable Experimental Mode"
+          description="By enabling this mode, you'll be able to use untested features and games." class="p-2" />
 
-        <UColorModeSwitch
-          size="lg"
-          v-model="darkmodeValue"
-          label="Change dark/light mode"
-          description="This is a checkbox."
-          class="p-2"
-        />
+        <UColorModeSwitch size="lg" v-model="darkmodeValue" label="Change dark/light mode"
+          description="This is a checkbox." class="p-2" />
 
-        <USwitch
-          size="lg"
-          v-model="autostartValue"
-          label="Enable autostart on boot"
-          description="Launch the app automatically when your system starts."
-          class="p-2"
-        />
+        <USwitch size="lg" v-model="autostartValue" label="Enable autostart on boot"
+          description="Launch the app automatically when your system starts." class="p-2" />
 
-        <USwitch
-          size="lg"
-          v-model="animatedHomeValue"
-          label="Enable home page animated background."
-          description="This will enable animated background on your home page."
-          class="p-2"
-        />
+        <USwitch size="lg" v-model="animatedHomeValue" label="Enable home page animated background."
+          description="This will enable animated background on your home page." class="p-2" />
 
-        <USwitch
-          size="lg"
-          v-model="debugModeValue"
-          label="Enable debug mode"
-          description="This will log all files in your device. <Feature Broken>"
-          class="p-2"
-          disabled
-        />
+        <USwitch size="lg" v-model="debugModeValue" label="Enable debug mode"
+          description="This will log all files in your device. <Feature Broken>" class="p-2" disabled />
 
-        <USwitch
-          size="lg"
-          v-model="ftpInstallValue"
-          label="Enable FTP Installation"
-          description="By enabling this, you'll be able to install games via FTP"
-          class="p-2"
-        />
+        <USwitch size="lg" v-model="ftpInstallValue" label="Enable FTP Installation"
+          description="By enabling this, you'll be able to install games via FTP" class="p-2" />
 
-        <USwitch
-          size="lg"
-          v-model="mtpInstallValue"
-          label="Enable MTP Installation"
-          description="By enabling this, you'll be able to install games via MTP"
-          class="p-2"
-        />
+        <USwitch size="lg" v-model="mtpInstallValue" label="Enable MTP Installation"
+          description="By enabling this, you'll be able to install games via MTP" class="p-2" />
+      </div>
+
+      <div class="p-4 space-y-4">
+        <USkeleton v-if="isLoading" class="h-16 w-full" />
+
+        <div v-else class="flex items-center justify-between p-4 border rounded-lg dark:border-red-500">
+
+          <div class="flex-1">
+            <h2 class="font-semibold">Danger Zone</h2>
+            <h3 class="font-semibold">Clear Torrent State and Game Files</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              This will remove all queued and completed torrent items as well as your game files.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <UButton @click="clearAllGames" :loading="isClearing" :disabled="isClearing" color="error" variant="soft"
+              class="cursor-pointer">
+              {{ isClearing ? "Clearing..." : "Clear" }}
+            </UButton>
+          </div>
+        </div>
+
+        <!-- Alternative: Using Switch Component -->
+        <!-- 
+          <USwitch
+            size="lg"
+            v-model="isPluginInstalled"
+            @update:model-value="toggleAnimePlugin"
+            :disabled="isInstalling || isUninstalling"
+            label="Enable Anime Streaming Service"
+            description="By enabling this mode, you'll be able to watch anime powered by yahyaMomin/hianime-API"
+            class="p-2"
+          />
+          -->
       </div>
     </div>
   </div>
