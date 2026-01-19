@@ -7,11 +7,18 @@ use crate::configs::constants::{APP_PATH, CONFIG_PATH, GAME_PATH, PLUGIN_PATH};
 
 pub fn get_app_path() -> PathBuf {
     let user_dirs = UserDirs::new().expect("Unable to determine user directories");
-    user_dirs
+    let path = user_dirs
         .document_dir()
         .expect("User has no Documents directory")
         .to_path_buf()
-        .join(APP_PATH)
+        .join(APP_PATH);
+
+    if !path.exists() {
+        warn!("App path does not exist. Creating directory: {:?}", path);
+        fs::create_dir_all(&path).expect("Failed to create app directory");
+    }
+
+    path
 }
 
 pub fn get_game_path() -> PathBuf {
