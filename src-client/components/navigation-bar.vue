@@ -13,6 +13,7 @@ const toast = useToast();
 const sidebarOpen = ref(true);
 const sidebarWidth = 248;
 const isExperimental = computed(() => accountStore.account?.isExperimental);
+const isAdmin = computed(() => accountStore.account?.isAdmin);
 const appVersion = await getVersion();
 
 // Plugin state
@@ -251,7 +252,9 @@ const bottomItems = computed<NavigationMenuItem[][]>(() => [
       <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
         <UNavigationMenu orientation="vertical" :items="bottomItems" class="data-[orientation=vertical]:w-full" />
 
-        <ChatSystem />
+        <ChatSystem roomId="cf9d62dc-8c56-4eae-b074-2790c19f9a17" roomName="General Chat" />
+
+        <ChatSystem v-if="isAdmin" roomId="9dd9370c-7793-422b-953e-dfdda4ededad" roomName="Dev Chat" />
 
         <UButton @click="handleUpdate" color="neutral" variant="ghost" icon="i-lucide-rocket"
           class="w-full justify-start cursor-pointer group relative w-full flex items-center gap-1.5 font-medium text-sm before:absolute before:z-[-1] before:rounded-md focus:outline-none focus-visible:outline-none dark:focus-visible:outline-none focus-visible:before:ring-inset focus-visible:before:ring-2 focus-visible:before:ring-primary flex-row px-2.5 py-1.5 before:inset-y-px before:inset-x-0 text-muted hover:text-highlighted hover:before:bg-elevated/50 transition-colors before:transition-colors"
